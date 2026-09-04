@@ -39,7 +39,20 @@ public abstract partial class ParticleEffect : DependencyObject
 	/// <summary>The study sheet amber accent.</summary>
 	public static readonly SKColor DefaultAccent = new(0xD6, 0xA0, 0x68);
 
-	private readonly SKColor[] _resolvedPalette = new SKColor[2];
+	/// <summary>The study sheet sage.</summary>
+	public static readonly SKColor DefaultSage = new(0x96, 0xA3, 0x8C);
+
+	/// <summary>The study sheet clay.</summary>
+	public static readonly SKColor DefaultClay = new(0xBE, 0x78, 0x60);
+
+	/// <summary>
+	/// The palette an effect draws with when it is handed none. Four colours,
+	/// because the multi-coloured studies (confetti, nebula, leaves) need more
+	/// than an ink and an accent.
+	/// </summary>
+	private static readonly SKColor[] DefaultPalette = [DefaultPrimary, DefaultAccent, DefaultSage, DefaultClay];
+
+	private readonly SKColor[] _resolvedPalette = new SKColor[4];
 	private bool _paletteValid;
 	private bool _emitted;
 
@@ -209,6 +222,17 @@ public abstract partial class ParticleEffect : DependencyObject
 		}
 	}
 
+	/// <summary>
+	/// A colour from the palette by index, wrapping round. Effects that scatter
+	/// several colours use this rather than naming each one, so a four-brush
+	/// palette recolours them completely.
+	/// </summary>
+	protected SKColor PaletteAt(int index)
+	{
+		EnsurePalette();
+		return _resolvedPalette[((index % _resolvedPalette.Length) + _resolvedPalette.Length) % _resolvedPalette.Length];
+	}
+
 	/// <summary>Applies <see cref="Opacity"/> to an alpha value in [0, 1].</summary>
 	protected byte Alpha(float alpha) =>
 		(byte)Math.Clamp(alpha * (float)Opacity * 255f, 0f, 255f);
@@ -223,14 +247,24 @@ public abstract partial class ParticleEffect : DependencyObject
 			return;
 		}
 
-		_resolvedPalette[0] = ColorAt(0, DefaultPrimary);
-		_resolvedPalette[1] = ColorAt(1, _resolvedPalette[0] == DefaultPrimary ? DefaultAccent : _resolvedPalette[0]);
+		var palette = Palette;
+		var supplied = palette?.Count ?? 0;
+
+		for (var i = 0; i < _resolvedPalette.Length; i++)
+		{
+			// Once a palette is supplied it governs entirely: an index past its
+			// end wraps round inside it rather than falling back to a default
+			// colour the caller never asked for.
+			_resolvedPalette[i] = supplied > 0
+				? Resolve(palette![i % supplied], DefaultPalette[i])
+				: DefaultPalette[i];
+		}
+
 		_paletteValid = true;
 
-		SKColor ColorAt(int index, SKColor fallback)
+		static SKColor Resolve(Brush brush, SKColor fallback)
 		{
-			var palette = Palette;
-			if (palette is not null && index < palette.Count && palette[index] is SolidColorBrush solid)
+			if (brush is SolidColorBrush solid)
 			{
 				var c = solid.Color;
 				return new SKColor(c.R, c.G, c.B, c.A);

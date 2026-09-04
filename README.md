@@ -5,12 +5,13 @@ single `ParticleView` control, plus the gallery app that shows them off, lets
 you tune them, hands you the code, and tests them.
 
 This is **Phase 1** of the recommendation in
-[`Uno Effects Recommendation.dc.html`](https://claude.ai/design/p/7b2677f1-35c8-4329-ac51-392436f2222a?file=Uno+Effects+Recommendation.dc.html):
-`ParticleView` plus eight effects spanning all six categories, the board and the
-detail view, Desktop and WebAssembly heads, and deterministic render tests.
+[`Uno Effects Recommendation.dc.html`](https://claude.ai/design/p/7b2677f1-35c8-4329-ac51-392436f2222a?file=Uno+Effects+Recommendation.dc.html)
+carried through to the full set: `ParticleView` plus all **64** studies from the
+sheet, the board and the detail view, Desktop and WebAssembly heads, and
+deterministic render tests over every effect.
 
 ```
-src/Uno.Effects.Particles/     the NuGet: ParticleView, ParticleEffect, eight effects, .sksl resources
+src/Uno.Effects.Particles/     the NuGet: ParticleView, ParticleEffect, all 64 effects, .sksl resources
 samples/Gallery/               one Uno app; heads: Skia Desktop and WebAssembly
   Catalog/Catalog.json         which effects the gallery shows, and in what order
 tests/Uno.Effects.RuntimeTests/ the deterministic render harness, run by the gallery itself
@@ -32,18 +33,22 @@ element with its layers as children. Effects are `DependencyObject`s, so every
 knob is bindable, animatable from a Storyboard or VisualState, and visible to a
 designer property panel.
 
-The eight effects, one per category:
+All 64 studies from the sheet are ported, in its own order, so the number under
+each tile matches the original board. They are grouped by family, one file each:
 
-| Effect       | Category    | Cost   | Notes                                     |
-|--------------|-------------|--------|-------------------------------------------|
-| `Dust`       | Atmosphere  | light  | motes on a slow noise field               |
-| `Snow`       | Atmosphere  | light  | adds `Sway`                               |
-| `Fireflies`  | Light       | medium | adds `BlinkRate`; draws in the accent      |
-| `Starfield`  | Paths       | light  | streaks from last frame to this one        |
-| `FlowField`  | Fields      | medium | trails, `TrailFade` 0.08                   |
-| `Follow`     | Interactive | light  | adds `Attraction`; chases the pointer      |
-| `Metaballs`  | Procedural  | heavy  | SKSL shader; adds `Threshold`              |
-| `Plasma`     | Procedural  | medium | SKSL shader; adds `Cells`                  |
+| Family        | Count | Effects |
+|---------------|-------|---------|
+| `Atmosphere`  | 11    | Dust, Snow, Rain, Smoke, Fog, Confetti, Bubbles, Pollen, Ash, Sandstorm, Leaves |
+| `Light`       | 15    | Fireflies, Sparks, Twinkle, Orbs, Embers, Lightning, Bokeh, Fireworks, Fountain, Burst, Sparkle, Nebula, Meteors, Sparkler, Arcs |
+| `Paths`       | 15    | Starfield, Trail, Loop, SinePath, Constellation, Orbits, Wave, Lissajous, Galaxy, Helix, Cascade, Breath, Phyllotaxis, Cube, Sphere |
+| `Fields`      | 10    | FlowField, CurlNoise, Flock, Gravity, Ripples, Dipole, Attractor, Vortex, Tornado, Ink |
+| `Interactive` | 4     | Follow, Repel, Lattice, Filings |
+| `Procedural`  | 9     | Plasma, Metaballs, Grain, Halftone, Aurora, Shimmer, Static, PulseGrid, Blob |
+
+Plasma and Metaballs are SKSL runtime shaders; everything else draws with
+`SKCanvas`. Effects that add their own knob say so on their detail page —
+`Snow.Sway`, `Fireflies.BlinkRate`, `Follow.Attraction`, `Repel.Reach`,
+`Metaballs.Threshold`, `Plasma.Cells`.
 
 Every effect also carries the common knobs it honours — `Count`, `Speed`,
 `Size`, `Opacity`, `Seed`, and where they mean something, `Direction` and
@@ -91,28 +96,27 @@ are `DependencyObject`s, so they need a running Uno app, and running the tests
 headless implementation of the same thing. Comparing the printed hashes between
 heads is the render-consistency test.
 
-Measured on Skia Desktop (Windows, CPU raster), 256x256:
+Measured on Skia Desktop (Windows, CPU raster), 256x256, all 64 effects:
 
-| Effect      | alloc/frame | median ms |
-|-------------|-------------|-----------|
-| Dust        | 43 B        | 0.12      |
-| Snow        | 15 B        | 0.13      |
-| Fireflies   | 43 B        | 0.05      |
-| Starfield   | 43 B        | 0.11      |
-| Flow field  | 104 B       | 0.18      |
-| Follow      | 131 B       | 0.12      |
-| Metaballs   | 10.7 KB     | 5.4–14.3  |
-| Plasma      | 10.4 KB     | 2.1–3.4   |
+| | median frame time | allocation per frame |
+|---|---|---|
+| 62 particle and CPU effects | 0.03 – 1.3 ms | 16 – 295 B |
+| Plasma (SKSL) | ~3 – 5 ms | ~10 KB |
+| Metaballs (SKSL) | ~5 – 18 ms | ~10 KB |
 
 The particle effects hold the recommendation's budget with room to spare and
-allocate essentially nothing per frame. **The shader effects do not**, and the
-reason is worth knowing before the CI budgets in Phase 2 are written: on the CPU
-raster backend every SKSL instruction is interpreted per pixel, and each frame
-allocates one `SKShader`. Metaballs in particular sits at or above the
-recommendation's 8 ms desktop budget at 256x256. Adding a `break` once the
-active blob count is passed cut it roughly threefold; the rest is the backend.
-A GPU-backed surface, or evaluating the field at a coarser resolution, is the
-Phase 2 fix. Until then Metaballs is honestly labelled heavy.
+allocate essentially nothing per frame — the emitters keep fixed-capacity pools
+and swap dead particles out rather than using a growable list, which is what
+keeps that number flat.
+
+**The shader effects do not**, and the reason is worth knowing before the CI
+budgets in Phase 2 are written: on the CPU raster backend every SKSL
+instruction is interpreted per pixel, and each frame allocates one `SKShader`.
+Metaballs in particular sits at or above the recommendation's 8 ms desktop
+budget at 256x256. Adding a `break` once the active blob count is passed cut it
+roughly threefold; the rest is the backend. A GPU-backed surface, or evaluating
+the field at a coarser resolution, is the Phase 2 fix. Until then Metaballs is
+honestly labelled heavy.
 
 ## Decisions and deviations from the recommendation
 
@@ -121,7 +125,7 @@ Phase 2 fix. Until then Metaballs is honestly labelled heavy.
   on the effect type instead, in `[Effect]` and `[EffectProperty]`, because the
   designer toolbox has to read the same metadata and two copies would drift.
   Catalog.json keeps what it alone knows: which effects the gallery shows and in
-  what order. Adding effect nine is still one C# class plus one catalog entry.
+  what order. Adding effect 65 is still one C# class plus one catalog entry.
 - **`ParticleView.Surface`, not `Background`.** `FrameworkElement.Background`
   already exists in Uno, and shadowing a base dependency property is a good way
   to get a binding that silently targets the wrong one.
@@ -133,3 +137,11 @@ Phase 2 fix. Until then Metaballs is honestly labelled heavy.
   Phase 1 does not need to answer it.
 - **Hot Design metadata** (the `.Design` assembly) is Phase 3. The attributes it
   would read are already in place.
+- **One file per family, not per effect.** The recommendation says adding an
+  effect is one C# class plus one catalog entry, and that still holds; sixty-four
+  single-class files simply made the folder harder to read than six that group
+  by category.
+- **Square-tile assumptions.** Several studies sized their circles off the width
+  alone, because the sheet was drawn on square tiles. Here they use the shorter
+  side, and the grid effects derive their row count from the cell size. Both are
+  identical on a square tile and stay inside the frame on a wide one.

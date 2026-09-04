@@ -73,3 +73,35 @@ Things that were only discoverable by running the app, in the order they bit.
   the timestep being fixed, not merely on the seed — worth saying plainly in
   the testing section, since it is what makes the cross-head hash comparison
   meaningful.
+
+## Completing the set
+
+The remaining 56 studies were ported in one pass, grouped into six files by
+family rather than one file per effect. Things worth recording:
+
+- **The palette grew from two colours to four.** Confetti, Nebula and Leaves
+  scatter across the sheet's ink, amber, sage and clay. `PaletteAt(index)`
+  wraps within whatever palette is supplied, so a two-brush palette recolours
+  them completely rather than falling back to colours the caller never asked
+  for.
+- **Emitters use fixed-capacity pools**, not growable lists, and remove a dead
+  particle by swapping the last live one into its slot. Sparks, Fireworks,
+  Fountain, Sparkler, Trail, Sparkle, Meteors and Ripples all work this way,
+  which is what keeps their allocation-per-frame in the tens of bytes.
+- **Randomness moved out of drawing.** Arcs and Static generated their picture
+  with random numbers inside the draw call. Both now build that state in Step,
+  so drawing a frame twice gives the same frame twice — the property the whole
+  render-test suite depends on.
+- **The square-tile assumption was everywhere.** The sheet was drawn on square
+  tiles, so grid effects used the column count for both axes and circular
+  effects sized off the width. Rows are now derived from the cell size and radii
+  from the shorter side; identical on a square tile, correct on a wide one.
+- **A blank-frame assertion was added to the suite.** Emitters legitimately draw
+  nothing at frame 0, and several effects therefore shared a frame-0 hash. That
+  meant a completely dead effect could have passed on matching blank frames, so
+  each effect must now differ from a cleared surface on at least one sampled
+  frame.
+
+All 64 are deterministic and each draws something; 62 of them run in under
+1.3 ms per frame at 256x256 with allocation in the tens to low hundreds of
+bytes.

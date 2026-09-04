@@ -12,12 +12,13 @@ public sealed record FrameHash(int Frame, string Hash);
 public sealed record RenderTestResult(
 	string Effect,
 	bool Deterministic,
+	bool DrewSomething,
 	IReadOnlyList<FrameHash> Frames,
 	long BytesPerFrame,
 	double MedianFrameMilliseconds,
 	string? Error)
 {
-	public bool Passed => Error is null && Deterministic;
+	public bool Passed => Error is null && Deterministic && DrewSomething;
 }
 
 /// <summary>
@@ -44,6 +45,18 @@ public static class RenderTestRunner
 
 	/// <summary>The surface colour frames are rendered onto.</summary>
 	private static readonly SKColor Surface = new(0x2A, 0x2A, 0x28);
+
+	/// <summary>The hash of a surface that has been cleared and nothing else.</summary>
+	private static readonly string BlankHash = ComputeBlankHash();
+
+	private static string ComputeBlankHash()
+	{
+		using var surface = SKSurface.Create(
+			new SKImageInfo(Size, Size, SKColorType.Rgba8888, SKAlphaType.Premul));
+
+		surface.Canvas.Clear(Surface);
+		return Hash(surface);
+	}
 
 	/// <summary>Runs every effect and returns one result each.</summary>
 	public static IReadOnlyList<RenderTestResult> RunAll(
@@ -74,12 +87,17 @@ public static class RenderTestRunner
 				deterministic = first.Hashes[i].Hash == second.Hashes[i].Hash;
 			}
 
+			// An emitter draws nothing on frame 0, which is correct; an effect
+			// that draws nothing on any sampled frame is broken. Without this,
+			// a silently dead effect passes on identical blank frames.
+			var drewSomething = first.Hashes.Any(f => f.Hash != BlankHash);
+
 			return new RenderTestResult(
-				name, deterministic, first.Hashes, first.BytesPerFrame, first.MedianMilliseconds, null);
+				name, deterministic, drewSomething, first.Hashes, first.BytesPerFrame, first.MedianMilliseconds, null);
 		}
 		catch (Exception ex)
 		{
-			return new RenderTestResult(name, false, [], 0, 0, ex.Message);
+			return new RenderTestResult(name, false, false, [], 0, 0, ex.Message);
 		}
 	}
 

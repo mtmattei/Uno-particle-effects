@@ -66,8 +66,9 @@ public sealed record StartupOptions(string? EffectId, bool RunRenderTests, strin
 			passed &= result.Passed;
 
 			var verdict = result.Error is not null ? "ERROR"
+				: !result.DrewSomething ? "BLANK"
 				: result.Deterministic ? "ok"
-				: "NONDETERMINISTIC";
+				: "NONDET";
 
 			var hashes = result.Error ?? string.Join("  ", result.Frames.Select(f => $"{f.Frame}:{f.Hash}"));
 
@@ -78,7 +79,7 @@ public sealed record StartupOptions(string? EffectId, bool RunRenderTests, strin
 		Console.WriteLine();
 		Console.WriteLine(passed
 			? "All effects are deterministic. Compare these hashes across heads to prove render consistency."
-			: "FAILED: at least one effect did not reproduce its own frames.");
+			: "FAILED: an effect either did not reproduce its own frames or drew nothing at all.");
 
 		Console.WriteLine();
 		passed &= CheckPaletteOverride();

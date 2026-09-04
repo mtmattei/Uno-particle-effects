@@ -10,9 +10,11 @@ namespace Uno.Effects.Gallery;
 /// </summary>
 public sealed partial class GridPage : Page
 {
+	// Eight across is the study sheet's own board; narrower windows step down
+	// rather than scrolling sideways.
 	private const int MinimumColumns = 2;
-	private const int MaximumColumns = 4;
-	private const double TargetTileWidth = 240;
+	private const int MaximumColumns = 8;
+	private const double TargetTileWidth = 165;
 
 	private readonly List<Filter> _filters = [];
 	private Filter _active;

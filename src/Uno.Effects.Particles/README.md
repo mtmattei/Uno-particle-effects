@@ -16,8 +16,9 @@ the same pixels on Windows, WebAssembly, Android, iOS, macOS and Linux from one
 code path. Effects are `DependencyObject`s: every knob is bindable, animatable
 from a Storyboard or VisualState, and visible to a designer property panel.
 
-Included: `Dust`, `Snow`, `Fireflies`, `Starfield`, `FlowField`, `Follow`,
-`Metaballs` and `Plasma`. The last two are SKSL runtime shaders.
+Included: all 64 studies from the sheet, across six families — Atmosphere,
+Light, Paths, Fields, Interactive and Procedural. Plasma and Metaballs are SKSL
+runtime shaders.
 
 Effects are deterministic — the same `Seed` and a fixed timestep produce the
 same frames on every platform — and pause when off screen, when the view is
