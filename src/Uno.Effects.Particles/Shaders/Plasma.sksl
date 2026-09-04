@@ -1,14 +1,24 @@
 // Plasma — four interfering sine fields, one of them radial.
-// Ported from the study sheet, where it was a 28x28 grid of filled cells; as a
-// shader it is continuous and costs the same at any size.
+// Ported from the study sheet, where it was a 28x28 grid of filled cells. As a
+// shader that grid becomes a knob rather than an implementation detail, and the
+// cost is the same at any size.
 
 uniform float2 uResolution;
 uniform float  uTime;
+uniform float  uCells;
 uniform float4 uColor;
 
 half4 main(float2 position)
 {
     float2 uv = position / uResolution;
+
+    // The study sheet sampled this field on a coarse grid of filled cells, and
+    // that quantisation is half of how the effect reads. uCells reproduces it;
+    // 0 evaluates the field continuously.
+    if (uCells > 0.0)
+    {
+        uv = floor(uv * uCells) / uCells;
+    }
     float t = uTime * 0.6;
 
     float v = sin(uv.x * 6.0 + t)

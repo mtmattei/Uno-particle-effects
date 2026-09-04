@@ -11,11 +11,20 @@
     <Version>0.1.0</Version>
     <Authors>Uno Platform</Authors>
     <Description>Particle and shader effects for Uno Platform, drawn with SkiaSharp through a single ParticleView control.</Description>
+    <PackageTags>uno-platform;skiasharp;particles;shaders;sksl;animation</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!-- Uno.Sdk marks single projects non-packable by default; this library is
+         the shipping artefact, so it opts back in. -->
+    <IsPackable>true</IsPackable>
 
     <UnoFeatures>
       SkiaRenderer;
     </UnoFeatures>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
 
   <ItemGroup>
     <!-- Shader effects carry their SKSL as embedded resources, so the source

@@ -179,6 +179,13 @@ public abstract partial class ParticleEffect : DependencyObject
 	public int ResolveCount(in EffectFrame frame) =>
 		Math.Max(1, (int)MathF.Round((Count > 0 ? Count : NaturalCount) * frame.Density));
 
+	/// <summary>
+	/// Whether this effect simulates particles at all. A shader effect paints
+	/// every pixel instead, and reporting a particle count for one would make
+	/// the diagnostics overlay lie.
+	/// </summary>
+	public bool SimulatesParticles => NaturalCount > 0;
+
 	/// <summary>The size multiplier actually used, after auto.</summary>
 	public float ResolveSize() => Size > 0 ? (float)Size : 1f;
 

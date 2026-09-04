@@ -1,3 +1,4 @@
+using Microsoft.UI.Xaml.Media;
 using Uno.Effects.Gallery.Catalog;
 using Uno.Effects.RuntimeTests;
 
@@ -80,9 +81,42 @@ public sealed record StartupOptions(string? EffectId, bool RunRenderTests, strin
 			: "FAILED: at least one effect did not reproduce its own frames.");
 
 		Console.WriteLine();
+		passed &= CheckPaletteOverride();
+
+		Console.WriteLine();
 		PrintGeneratedCode();
 
 		return passed;
+	}
+
+	/// <summary>
+	/// Proves that handing an effect a different palette actually changes the
+	/// pixels it draws. This is the mechanism the light/dark surface toggle and
+	/// theme-resource palettes both rely on, and it is worth an assertion
+	/// rather than a look.
+	/// </summary>
+	private static bool CheckPaletteOverride()
+	{
+		var entry = EffectCatalog.Find("snow") ?? EffectCatalog.Entries[0];
+
+		var standard = RenderTestRunner.Run($"{entry.Name} default palette", entry.Create);
+		var themed = RenderTestRunner.Run($"{entry.Name} dark ink palette", () =>
+		{
+			var effect = entry.Create();
+			effect.Palette.Add(new SolidColorBrush(Windows.UI.Color.FromArgb(0xFF, 0x2A, 0x2A, 0x28)));
+			effect.Palette.Add(new SolidColorBrush(Windows.UI.Color.FromArgb(0xFF, 0xA8, 0x72, 0x38)));
+			return effect;
+		});
+
+		var changed = standard.Frames.Count == themed.Frames.Count
+			&& standard.Frames.Count > 0
+			&& standard.Frames.Zip(themed.Frames).Any(pair => pair.First.Hash != pair.Second.Hash);
+
+		Console.WriteLine(changed
+			? $"Palette override changes the drawn pixels for {entry.Name}: ok"
+			: $"FAILED: overriding the palette did not change what {entry.Name} draws.");
+
+		return changed;
 	}
 
 	/// <summary>

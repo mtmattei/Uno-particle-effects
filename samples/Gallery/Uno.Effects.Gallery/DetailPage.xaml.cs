@@ -218,10 +218,17 @@ public sealed partial class DetailPage : Page
 		_ => CodeGenerator.ToXaml(_entry, _effect),
 	};
 
-	private void UpdateReadout() =>
-		FpsLabel.Text = _view.Paused
-			? "PAUSED"
-			: $"{_view.FramesPerSecond:0} FPS · {_view.ParticleCount} PARTICLES · {_view.DrawMilliseconds:0.00} MS";
+	private void UpdateReadout()
+	{
+		if (_view.Paused)
+		{
+			FpsLabel.Text = "PAUSED";
+			return;
+		}
+
+		var particles = _view.ParticleCount > 0 ? $"{_view.ParticleCount} PARTICLES · " : string.Empty;
+		FpsLabel.Text = $"{_view.FramesPerSecond:0} FPS · {particles}{_view.DrawMilliseconds:0.00} MS";
+	}
 
 	private void OnTogglePlay(object sender, RoutedEventArgs e)
 	{

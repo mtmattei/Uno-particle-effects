@@ -544,7 +544,11 @@ public partial class ParticleView : SKCanvasElement
 				width, height, effectDelta, effect.ElapsedTime, pointerX, pointerY, inside, density);
 
 			effect.Render(canvas, in frame, reemit: false);
-			total += effect.ResolveCount(in frame);
+
+			if (effect.SimulatesParticles)
+			{
+				total += effect.ResolveCount(in frame);
+			}
 		}
 
 		_lastParticleCount = total;
@@ -636,7 +640,9 @@ public partial class ParticleView : SKCanvasElement
 		_diagnosticsFont ??= new SKFont(SKTypeface.Default, 10f);
 		_diagnosticsPaint ??= new SKPaint { IsAntialias = true };
 
-		var text = $"{_fps:0} fps · {_lastParticleCount} particles · {_lastDrawMilliseconds:0.00} ms";
+		var text = _lastParticleCount > 0
+			? $"{_fps:0} fps · {_lastParticleCount} particles · {_lastDrawMilliseconds:0.00} ms"
+			: $"{_fps:0} fps · {_lastDrawMilliseconds:0.00} ms";
 
 		_diagnosticsPaint.Color = SKColors.Black.WithAlpha(140);
 		canvas.DrawRect(6, height - 22, _diagnosticsFont.MeasureText(text) + 12, 16, _diagnosticsPaint);

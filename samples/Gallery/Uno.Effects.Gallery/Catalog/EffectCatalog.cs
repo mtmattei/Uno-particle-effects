@@ -28,6 +28,10 @@ public static class EffectCatalog
 		"Trimming",
 		"IL2072:Target parameter does not satisfy DynamicallyAccessedMembersAttribute",
 		Justification = "Every effect type named by Catalog.json is preserved wholesale by LinkerConfig.xml.")]
+	[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage(
+		"Trimming",
+		"IL2026:Members annotated with RequiresUnreferencedCode may break when trimmed",
+		Justification = "Same: Uno.Effects.Particles is preserved whole, so resolving an effect by name is safe.")]
 	private static IReadOnlyList<CatalogEntry> Load()
 	{
 		using var stream = typeof(EffectCatalog).Assembly.GetManifestResourceStream(ResourceName)
