@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml.Media;
 using Uno.Effects.Gallery.Catalog;
+using Uno.Effects.Particles;
 using Uno.Effects.RuntimeTests;
 
 namespace Uno.Effects.Gallery;
@@ -85,6 +86,9 @@ public sealed record StartupOptions(string? EffectId, bool RunRenderTests, strin
 		passed &= CheckPaletteOverride();
 
 		Console.WriteLine();
+		passed &= CheckDeviceTierScaling();
+
+		Console.WriteLine();
 		PrintGeneratedCode();
 
 		return passed;
@@ -119,6 +123,36 @@ public sealed record StartupOptions(string? EffectId, bool RunRenderTests, strin
 
 		return changed;
 	}
+
+	/// <summary>
+	/// Checks that the particle budget actually tracks the density it is handed,
+	/// and that an explicit Count still wins. This is the behavioural rule the
+	/// recommendation asks to hold on every platform, and it is the one rule
+	/// that is invisible in a screenshot.
+	/// </summary>
+	private static bool CheckDeviceTierScaling()
+	{
+		using var effect = (EffectCatalog.Find("snow") ?? EffectCatalog.Entries[0]).Create();
+
+		var full = effect.ResolveCount(Frame(1f));
+		var half = effect.ResolveCount(Frame(0.5f));
+		var scales = half < full && half > 0;
+
+		effect.Count = 120;
+		var overridden = effect.ResolveCount(Frame(1f)) == 120;
+
+		Console.WriteLine($"Device tier: this device resolves to {DeviceTierProbe():0.00}x");
+		Console.WriteLine(scales && overridden
+			? $"Count scales with density ({full} at 1.0, {half} at 0.5) and an explicit Count still wins: ok"
+			: "FAILED: density did not scale the particle count, or an explicit Count was ignored.");
+
+		return scales && overridden;
+
+		static EffectFrame Frame(float density) => new(256, 256, 0f, 0f, 128f, 128f, false, density);
+	}
+
+	/// <summary>What the tier resolved to here, read through a throwaway view.</summary>
+	private static double DeviceTierProbe() => new Particles.ParticleView().EffectiveDensity;
 
 	/// <summary>
 	/// Prints what "Copy XAML" and "Copy C#" would produce for a tweaked

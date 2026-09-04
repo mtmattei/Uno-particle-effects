@@ -58,7 +58,16 @@ deliberate one.
 
 `Palette` is a list of brushes rather than colours, so an effect can be handed
 theme resources and will follow a light/dark switch without any code. Index 0 is
-the primary ink, index 1 the accent.
+the primary ink, index 1 the accent, and two more follow for the effects that
+scatter colour (Confetti, Nebula, Leaves).
+
+`ParticleView.Density` scales every effect's natural count. It also treats 0 as
+automatic, and automatic means a device tier: WebAssembly and mobile get less
+budget than a desktop, and so do machines with few cores, floored at a third so
+an effect never stops reading as itself. `EffectiveDensity` reports what it
+resolved to. The render tests pin it to 1 — identical pixels across heads and a
+per-device particle budget would otherwise contradict each other, so the tests
+compare the effect and the tier applies to the live view.
 
 ## The gallery
 

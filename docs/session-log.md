@@ -139,3 +139,33 @@ Also, from the skill's SkiaSharp guidance:
 virtualizing with an `ItemsRepeater`. That is roughly 28 MB of surfaces for
 tiles that may be off screen; the viewport check already stops their clocks, and
 the memory only starts to matter well past 64 effects.
+
+## Device-tier density
+
+The recommendation lists "scale `Count` by a device-tier heuristic unless
+overridden" among the behavioural rules to hold everywhere. `ParticleView`
+documented exactly that — and did not do it. The property defaulted to 1.0 and
+nothing ever computed a tier, so the XML doc, and the README that repeated it,
+were both claiming behaviour the code did not have.
+
+Now implemented:
+
+- `Density` defaults to 0, meaning automatic, following the same convention as
+  `Count` and `Size`, so an explicit 1 is a real instruction rather than an
+  indistinguishable default. `EffectiveDensity` reports what it resolved to.
+- `DeviceTier` estimates the budget once: WebAssembly ×0.6 (it rasterizes on one
+  thread, shared with the page), Android and iOS ×0.75, and a further ×0.6 or
+  ×0.8 for machines with two or four cores, floored at a third. Coarse and
+  deliberately so — it is a budget, not a benchmark.
+- The suite now asserts it: the count tracks the density it is handed, and an
+  explicit `Count` still wins. This is the one behavioural rule that is
+  invisible in a screenshot, so it needed an assertion rather than a look.
+
+**Worth taking back to the document:** this rule and the render-consistency rule
+in §5 are in tension. Identical pixels on every head and a per-device particle
+budget cannot both hold for the live view. The resolution here is that the tests
+pin the density to 1, so they compare the *effect* across heads, while the tier
+applies to the *view*. §5 should say which of the two it means.
+
+All 64 render hashes are unchanged, and this machine (16 cores, desktop)
+resolves to 1.00x, so nothing on the board moved.

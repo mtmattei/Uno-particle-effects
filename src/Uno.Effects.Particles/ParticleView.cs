@@ -160,8 +160,11 @@ public partial class ParticleView : SKCanvasElement
 		nameof(Speed), typeof(double), typeof(ParticleView), new PropertyMetadata(1d));
 
 	/// <summary>
-	/// Particle budget multiplier. Defaults to a device-tier heuristic; set it
-	/// explicitly to override.
+	/// Particle budget multiplier. 0, the default, means the device tier decides;
+	/// any other value overrides it. Follows the same "0 is automatic"
+	/// convention as <see cref="ParticleEffect.Count"/> and
+	/// <see cref="ParticleEffect.Size"/>, so an explicit 1 is a real instruction
+	/// rather than an indistinguishable default.
 	/// </summary>
 	public double Density
 	{
@@ -170,7 +173,14 @@ public partial class ParticleView : SKCanvasElement
 	}
 
 	public static readonly DependencyProperty DensityProperty = DependencyProperty.Register(
-		nameof(Density), typeof(double), typeof(ParticleView), new PropertyMetadata(1d, OnStateChanged));
+		nameof(Density), typeof(double), typeof(ParticleView), new PropertyMetadata(0d, OnStateChanged));
+
+	/// <summary>
+	/// The multiplier actually in use, after the device tier. Exposed so an app
+	/// can show or log what it resolved to rather than having to guess.
+	/// </summary>
+	public double EffectiveDensity =>
+		Density > 0 ? Math.Clamp(Density, 0.05, 4) : DeviceTier.Density;
 
 	/// <summary>Gaussian blur applied to the whole composed layer stack.</summary>
 	public double Blur
@@ -583,7 +593,7 @@ public partial class ParticleView : SKCanvasElement
 
 		FadeSurface(canvas, width, height, effects[0].TrailFade);
 
-		var density = (float)Math.Clamp(Density, 0.05, 4);
+		var density = (float)EffectiveDensity;
 		var total = 0;
 
 		foreach (var effect in effects)
