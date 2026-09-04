@@ -130,6 +130,20 @@ public abstract partial class ShaderEffect : ParticleEffect
 		};
 	}
 
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			_builder?.Dispose();
+			_builder = null;
+			_compiled?.Dispose();
+			_compiled = null;
+			_compiledFrom = null;
+		}
+
+		base.Dispose(disposing);
+	}
+
 	private static void OnShaderSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) =>
 		((ShaderEffect)d).Invalidate();
 }

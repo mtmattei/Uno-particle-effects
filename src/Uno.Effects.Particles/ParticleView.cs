@@ -30,6 +30,12 @@ public partial class ParticleView : SKCanvasElement
 {
 	private const float MaxDeltaTime = 0.05f;
 
+	/// <summary>
+	/// How long a single frame may spend settling a newly emitted pool. Four
+	/// milliseconds leaves the rest of a 60 fps frame intact.
+	/// </summary>
+	private const double WarmUpBudgetMilliseconds = 4d;
+
 	private readonly Stopwatch _clock = new();
 	private SKSurface? _surface;
 	private SKPaint? _blitPaint;
@@ -40,6 +46,8 @@ public partial class ParticleView : SKCanvasElement
 	private int _surfaceHeight;
 	private float _surfaceScale;
 	private bool _needsEmit = true;
+	private int _warmUpRemaining;
+	private SKColor _surfaceColor = SKColors.Transparent;
 	private bool _blitPaintValid;
 	private bool _rendering;
 	private bool _inViewport = true;
@@ -238,10 +246,23 @@ public partial class ParticleView : SKCanvasElement
 	private void OnUnloaded(object sender, RoutedEventArgs e)
 	{
 		StopClock();
+
+		// Every one of these wraps a native allocation. Waiting for finalization
+		// is what turns a board that has been filtered a few times into a
+		// process holding far more native memory than it is using.
 		_surface?.Dispose();
 		_surface = null;
+		_blitPaint?.Dispose();
+		_blitPaint = null;
+		_blitPaintValid = false;
+		_diagnosticsFont?.Dispose();
+		_diagnosticsFont = null;
+		_diagnosticsPaint?.Dispose();
+		_diagnosticsPaint = null;
+
 		_surfaceWidth = _surfaceHeight = 0;
 		_needsEmit = true;
+		_warmUpRemaining = 0;
 	}
 
 	private void OnEffectiveViewportChanged(FrameworkElement sender, EffectiveViewportChangedEventArgs args)
@@ -390,6 +411,7 @@ public partial class ParticleView : SKCanvasElement
 	private static void OnStateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
 		var view = (ParticleView)d;
+		view.UpdateSurfaceColor();
 		view._needsEmit = true;
 		view.Invalidate();
 	}
@@ -453,18 +475,17 @@ public partial class ParticleView : SKCanvasElement
 				effect.ElapsedTime = 0f;
 			}
 
-			// Settle the pool before anything is shown, exactly as the study
-			// sheet does: an idle tile is a real frame, not a first tick.
-			var warmUp = Math.Max(0, WarmUpFrames);
-			for (var i = 0; i < warmUp; i++)
-			{
-				RenderPass(offscreen, width, height, 1f / 60f);
-			}
+			_warmUpRemaining = Math.Max(0, WarmUpFrames);
 
-			if (warmUp == 0)
+			if (_warmUpRemaining == 0)
 			{
 				RenderPass(offscreen, width, height, 0f);
 			}
+		}
+
+		if (_warmUpRemaining > 0)
+		{
+			WarmUp(offscreen, width, height);
 		}
 		else
 		{
@@ -488,6 +509,44 @@ public partial class ParticleView : SKCanvasElement
 		if (ShowDiagnostics)
 		{
 			DrawDiagnostics(canvas, width, height);
+		}
+	}
+
+	/// <summary>
+	/// Settles the pool a few frames at a time, within a budget, continuing on
+	/// later frames until it is done.
+	/// </summary>
+	/// <remarks>
+	/// Settling is not optional — an unsettled first frame is why the study
+	/// sheet warms up at all — but doing all of it in one go is what turns a
+	/// board of tiles into a stall. Measured on the 64-tile board, the whole
+	/// warm-up came to about 2.5 seconds of work, and the single worst tile
+	/// (Metaballs) held the UI thread for 226 ms on its own. Spread over a few
+	/// frames the tile visibly settles instead, and nothing blocks.
+	/// </remarks>
+	private void WarmUp(SKCanvas canvas, float width, float height)
+	{
+		var deadline = Stopwatch.GetTimestamp() + (long)(WarmUpBudgetMilliseconds / 1000d * Stopwatch.Frequency);
+
+		// Always at least one frame, so a single expensive effect still makes
+		// progress rather than spinning forever on an exhausted budget.
+		do
+		{
+			RenderPass(canvas, width, height, 1f / 60f);
+			_warmUpRemaining--;
+		}
+		while (_warmUpRemaining > 0 && Stopwatch.GetTimestamp() < deadline);
+
+		if (_warmUpRemaining > 0)
+		{
+			// Ask for another frame: the clock may be stopped, as it is for
+			// every idle tile on the board.
+			Invalidate();
+		}
+		else
+		{
+			// Do not charge the time spent settling to the simulation.
+			_lastTicks = _clock.ElapsedTicks;
 		}
 	}
 
@@ -630,8 +689,15 @@ public partial class ParticleView : SKCanvasElement
 		canvas.Restore();
 	}
 
-	private SKColor SurfaceColor =>
-		Surface is SolidColorBrush solid
+	/// <summary>
+	/// The surface colour, resolved once per change rather than per frame. It is
+	/// read twice a frame by every view on the board, and a dependency-property
+	/// lookup plus a brush cast is not free at that rate.
+	/// </summary>
+	private SKColor SurfaceColor => _surfaceColor;
+
+	private void UpdateSurfaceColor() =>
+		_surfaceColor = Surface is SolidColorBrush solid
 			? new SKColor(solid.Color.R, solid.Color.G, solid.Color.B, solid.Color.A)
 			: SKColors.Transparent;
 

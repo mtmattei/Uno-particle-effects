@@ -105,3 +105,37 @@ family rather than one file per effect. Things worth recording:
 All 64 are deterministic and each draws something; 62 of them run in under
 1.3 ms per frame at 256x256 with allocation in the tens to low hundreds of
 bytes.
+
+## Performance pass
+
+Ran against the 64-tile board, measuring before changing anything.
+
+**Measured first.** Instrumenting the settle step showed 128 warm-up events for
+64 tiles — every tile settles twice, because layout runs at 152 px and then at
+167 px before coming to rest — totalling 2,478 ms, with a single worst frame of
+225.8 ms (Metaballs) holding the UI thread on its own.
+
+**Fixed.** Settling is now time-boxed to 4 ms per frame and continues on the
+next frame, requesting one if the clock is stopped, which it is for every idle
+tile. Re-measured on the same board: one frame over 8 ms, worst 9.7 ms. That is
+the 226 ms hitch gone and the ~1.2 s per-layout stall spread out.
+
+**Verified no pixels moved.** The render suite produces byte-identical hashes
+for all 64 effects before and after. This is the payoff for having built the
+determinism harness first: a performance change to the frame loop could be
+proved behaviour-neutral rather than eyeballed.
+
+Also, from the skill's SkiaSharp guidance:
+
+- `ParticleEffect` is now `IDisposable` and releases its `SKPaint`;
+  `ShaderEffect` also releases its compiled effect and builder; `ParticleView`
+  releases its blit paint and diagnostics font, not just its surface. The
+  gallery disposes the effect it replaces on reset and on navigating away.
+- The surface colour was being re-read from a dependency property and
+  re-converted from a brush twice per frame per view. It is now resolved when it
+  changes.
+
+**Not done, deliberately.** The board realizes all 64 tiles instead of
+virtualizing with an `ItemsRepeater`. That is roughly 28 MB of surfaces for
+tiles that may be off screen; the viewport check already stops their clocks, and
+the memory only starts to matter well past 64 effects.

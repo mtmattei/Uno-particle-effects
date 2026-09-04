@@ -20,6 +20,12 @@ public abstract partial class ParticleEffect
 	/// </summary>
 	protected SKPaint Paint => _paint ??= new SKPaint { IsAntialias = true };
 
+	private protected void DisposePaint()
+	{
+		_paint?.Dispose();
+		_paint = null;
+	}
+
 	/// <summary>Fills a circle in the given colour at the given alpha.</summary>
 	protected void Dot(SKCanvas canvas, float x, float y, float radius, SKColor color, float alpha)
 	{

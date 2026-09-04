@@ -118,6 +118,38 @@ roughly threefold; the rest is the backend. A GPU-backed surface, or evaluating
 the field at a coarser resolution, is the Phase 2 fix. Until then Metaballs is
 honestly labelled heavy.
 
+## Performance
+
+The per-effect numbers above are one half of the picture; the other half is what
+a board of 64 live views costs, which is where the real problems were.
+
+**Settling is time-boxed.** A newly emitted pool is settled over 90 frames so an
+idle tile shows a real frame rather than a first tick. Doing all 90 in one go
+made the worst tile (Metaballs) hold the UI thread for **226 ms**, and the board
+as a whole did **2.5 seconds** of settling — twice, because layout runs at two
+different tile widths before it comes to rest. `ParticleView` now spends at most
+4 ms a frame settling and continues on the next frame. Measured on the same
+board: **one** frame over 8 ms, worst **9.7 ms**. The rendered frames are
+byte-identical before and after, which the render-test hashes confirm.
+
+**Native objects are released deterministically.** `ParticleEffect` is
+`IDisposable` and disposes its `SKPaint`; `ShaderEffect` also disposes its
+compiled effect and builder; `ParticleView` disposes its surface, blit paint and
+diagnostics objects when it unloads. Filtering the board discards 64 views at a
+time, so waiting for finalization here is the difference between a steady
+process and one that holds far more native memory than it is using.
+
+**The surface colour is resolved on change, not per frame.** It is read twice a
+frame by every view on the board; a dependency-property lookup and a brush cast
+at that rate is not free.
+
+Still open, and deliberately so: the board realizes all 64 tiles rather than
+virtualizing them, so every tile owns a surface whether or not it is scrolled
+into view. At ~450 KB a tile that is around 28 MB, and the viewport check
+already stops the clock for tiles that are off screen. An `ItemsRepeater` would
+fix the memory too, and is the obvious next step if the catalog grows well past
+64.
+
 ## Decisions and deviations from the recommendation
 
 - **Catalog.json lists effects; attributes describe them.** The recommendation

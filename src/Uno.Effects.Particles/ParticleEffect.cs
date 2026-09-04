@@ -31,7 +31,7 @@ public enum EffectInvalidation
 /// <see cref="Draw"/>. Nothing here touches the visual tree: one effect draws
 /// hundreds of particles onto a single <see cref="SKCanvas"/>.
 /// </remarks>
-public abstract partial class ParticleEffect : DependencyObject
+public abstract partial class ParticleEffect : DependencyObject, IDisposable
 {
 	/// <summary>The study sheet paper-white ink.</summary>
 	public static readonly SKColor DefaultPrimary = new(0xE9, 0xE5, 0xDD);
@@ -335,6 +335,26 @@ public abstract partial class ParticleEffect : DependencyObject
 	}
 
 	internal void MarkUnemitted() => _emitted = false;
+
+	/// <summary>
+	/// Releases the native drawing resources this effect holds. An effect that
+	/// is replaced rather than reused - the gallery does this on every reset and
+	/// every navigation - should be disposed, or its paint waits for
+	/// finalization.
+	/// </summary>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	protected virtual void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			DisposePaint();
+		}
+	}
 
 	/// <summary>Requests a redraw, optionally re-emitting the particle pool.</summary>
 	protected void Invalidate(EffectInvalidation kind = EffectInvalidation.Visual)

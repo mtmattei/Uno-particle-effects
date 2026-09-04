@@ -88,6 +88,9 @@ public sealed partial class DetailPage : Page
 	{
 		base.OnNavigatedFrom(e);
 		_readout.Stop();
+
+		_view.Effects.Clear();
+		_effect.Dispose();
 	}
 
 	private void BuildMeta()
@@ -272,6 +275,7 @@ public sealed partial class DetailPage : Page
 
 	private void OnReset(object sender, RoutedEventArgs e)
 	{
+		var replaced = _effect;
 		_effect = _entry.Create();
 		ApplyPalette();
 
@@ -280,6 +284,8 @@ public sealed partial class DetailPage : Page
 
 		BuildKnobs();
 		UpdateCode();
+
+		replaced.Dispose();
 	}
 
 	private static void CopyToClipboard(string text)
