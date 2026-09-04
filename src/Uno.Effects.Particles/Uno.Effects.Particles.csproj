@@ -1,0 +1,19 @@
+<Project Sdk="Uno.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net10.0-browserwasm;net10.0-desktop</TargetFrameworks>
+    <UnoSingleProject>true</UnoSingleProject>
+    <OutputType>Library</OutputType>
+    <GenerateLibraryLayout>true</GenerateLibraryLayout>
+    <RootNamespace>Uno.Effects.Particles</RootNamespace>
+
+    <!-- NuGet identity (see the recommendation: ship as its own 0.x package). -->
+    <PackageId>Uno.Effects.Particles</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Uno Platform</Authors>
+    <Description>Particle and shader effects for Uno Platform, drawn with SkiaSharp through a single ParticleView control.</Description>
+
+    <UnoFeatures>
+      SkiaRenderer;
+    </UnoFeatures>
+  </PropertyGroup>
+</Project>

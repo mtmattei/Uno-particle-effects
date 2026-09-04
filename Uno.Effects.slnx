@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/samples/" />
+  <Folder Name="/samples/Gallery/">
+    <Project Path="samples/Gallery/Uno.Effects.Gallery/Uno.Effects.Gallery.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Uno.Effects.Particles/Uno.Effects.Particles.csproj" />
+  </Folder>
+</Solution>
