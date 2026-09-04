@@ -16,4 +16,10 @@
       SkiaRenderer;
     </UnoFeatures>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Shader effects carry their SKSL as embedded resources, so the source
+         the gallery shows and the source that runs are the same string. -->
+    <EmbeddedResource Include="Shaders\*.sksl" />
+  </ItemGroup>
 </Project>
