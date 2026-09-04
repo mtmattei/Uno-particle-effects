@@ -11,7 +11,7 @@ namespace Uno.Effects.Particles;
 	Description = "Motes drifting on a slow noise field.",
 	Tags = "ambient,background,subtle",
 	CommonKnobs = "Count,Speed,Size,Opacity,Seed,Direction,Gravity")]
-public sealed partial class DustEffect : ParticleEffect
+public sealed partial class Dust : ParticleEffect
 {
 	private struct Mote
 	{

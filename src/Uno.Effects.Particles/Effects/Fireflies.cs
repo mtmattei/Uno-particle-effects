@@ -12,7 +12,7 @@ namespace Uno.Effects.Particles;
 	Description = "Wandering lights that blink in and out.",
 	Tags = "ambient,glow,accent",
 	CommonKnobs = "Count,Speed,Size,Opacity,Seed")]
-public sealed partial class FirefliesEffect : ParticleEffect
+public sealed partial class Fireflies : ParticleEffect
 {
 	private struct Fly
 	{
@@ -34,7 +34,7 @@ public sealed partial class FirefliesEffect : ParticleEffect
 	}
 
 	public static readonly DependencyProperty BlinkRateProperty = DependencyProperty.Register(
-		nameof(BlinkRate), typeof(double), typeof(FirefliesEffect), new PropertyMetadata(1d, OnVisualChanged));
+		nameof(BlinkRate), typeof(double), typeof(Fireflies), new PropertyMetadata(1d, OnVisualChanged));
 
 	protected override int NaturalCount => 22;
 

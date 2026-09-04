@@ -1,0 +1,14 @@
+{
+  "//": "The catalog drives the grid, the detail pages, code generation and the test matrix. Adding effect 9 is one C# class plus one entry here. Everything the effect can describe about itself - name, category, cost, tags, knobs and their ranges - is read from its [Effect] and [EffectProperty] attributes instead of being repeated here, so the gallery and the Hot Design property panel can never drift apart.",
+  "version": 1,
+  "effects": [
+    { "id": "dust", "type": "Uno.Effects.Particles.Dust" },
+    { "id": "snow", "type": "Uno.Effects.Particles.Snow" },
+    { "id": "fireflies", "type": "Uno.Effects.Particles.Fireflies" },
+    { "id": "starfield", "type": "Uno.Effects.Particles.Starfield" },
+    { "id": "flow-field", "type": "Uno.Effects.Particles.FlowField" },
+    { "id": "follow", "type": "Uno.Effects.Particles.Follow" },
+    { "id": "metaballs", "type": "Uno.Effects.Particles.Metaballs" },
+    { "id": "plasma", "type": "Uno.Effects.Particles.Plasma" }
+  ]
+}

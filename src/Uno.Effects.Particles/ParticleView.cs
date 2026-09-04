@@ -248,7 +248,21 @@ public partial class ParticleView : SKCanvasElement
 	{
 		// A tile scrolled out of sight costs nothing: one of the behavioural
 		// rules the recommendation asks to hold on every platform.
-		var visible = args.BringIntoViewDistanceX < 400 && args.BringIntoViewDistanceY < 400;
+		//
+		// Only a positively empty viewport pauses the view. Not every head
+		// implements every member of these args, and the safe answer to "I do
+		// not know whether this is on screen" is to keep drawing.
+		bool visible;
+		try
+		{
+			var viewport = args.EffectiveViewport;
+			visible = viewport.Width > 0 && viewport.Height > 0;
+		}
+		catch (NotImplementedException)
+		{
+			visible = true;
+		}
+
 		if (visible != _inViewport)
 		{
 			_inViewport = visible;
@@ -454,7 +468,15 @@ public partial class ParticleView : SKCanvasElement
 		}
 		else
 		{
-			RenderPass(offscreen, width, height, NextDeltaTime());
+			var delta = NextDeltaTime();
+
+			// A repaint that advances no time must not touch the surface: on a
+			// trail effect, re-fading the same frame would slowly wash a paused
+			// tile out to nothing.
+			if (delta > 0)
+			{
+				RenderPass(offscreen, width, height, delta);
+			}
 		}
 
 		offscreen.Restore();

@@ -13,7 +13,7 @@ namespace Uno.Effects.Particles;
 	Tags = "pointer,cursor,playful",
 	RespondsToPointer = true,
 	CommonKnobs = "Count,Speed,Size,Opacity,Seed")]
-public sealed partial class FollowEffect : ParticleEffect
+public sealed partial class Follow : ParticleEffect
 {
 	private struct Chaser
 	{
@@ -35,12 +35,12 @@ public sealed partial class FollowEffect : ParticleEffect
 	}
 
 	public static readonly DependencyProperty AttractionProperty = DependencyProperty.Register(
-		nameof(Attraction), typeof(double), typeof(FollowEffect), new PropertyMetadata(1d, OnVisualChanged));
+		nameof(Attraction), typeof(double), typeof(Follow), new PropertyMetadata(1d, OnVisualChanged));
 
 	protected override int NaturalCount => 40;
 
 	/// <summary>The smear is the point, so most of each frame survives.</summary>
-	protected internal override float TrailFade => 0.3f;
+	public override float TrailFade => 0.3f;
 
 	protected override void Emit(in EffectFrame frame)
 	{

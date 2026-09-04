@@ -14,7 +14,7 @@ namespace Uno.Effects.Particles;
 	Tags = "shader,organic,hero",
 	IsShaderBased = true,
 	CommonKnobs = "Count,Speed,Size,Opacity,Seed")]
-public sealed partial class MetaballsEffect : ShaderEffect
+public sealed partial class Metaballs : ShaderEffect
 {
 	/// <summary>Matches the array length declared in Metaballs.sksl.</summary>
 	private const int MaxBalls = 8;
@@ -41,7 +41,7 @@ public sealed partial class MetaballsEffect : ShaderEffect
 	}
 
 	public static readonly DependencyProperty ThresholdProperty = DependencyProperty.Register(
-		nameof(Threshold), typeof(double), typeof(MetaballsEffect), new PropertyMetadata(1d, OnVisualChanged));
+		nameof(Threshold), typeof(double), typeof(Metaballs), new PropertyMetadata(1d, OnVisualChanged));
 
 	protected override string ShaderResourceName => "Uno.Effects.Particles.Shaders.Metaballs.sksl";
 
@@ -69,10 +69,10 @@ public sealed partial class MetaballsEffect : ShaderEffect
 
 	protected override void SetUniforms(SKRuntimeEffectUniforms uniforms, in EffectFrame frame)
 	{
-		// The study sheet was tuned on a ~128px tile; keeping the blobs
+		// The study sheet was tuned on a ~150px tile; keeping the blobs
 		// proportional means the effect reads the same in a grid cell and on a
 		// full-page preview.
-		var scale = MathF.Min(frame.Width, frame.Height) / 128f * ResolveSize();
+		var scale = MathF.Min(frame.Width, frame.Height) / 150f * ResolveSize();
 
 		Array.Clear(_uniformBalls);
 
@@ -88,6 +88,7 @@ public sealed partial class MetaballsEffect : ShaderEffect
 
 		uniforms["uResolution"] = new[] { frame.Width, frame.Height };
 		uniforms["uBalls"] = _uniformBalls;
+		uniforms["uCount"] = (float)_balls.Length;
 		uniforms["uThreshold"] = (float)Threshold;
 		SetColor(uniforms, "uColor", Primary, (float)Opacity);
 	}

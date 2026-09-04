@@ -12,7 +12,7 @@ namespace Uno.Effects.Particles;
 	Description = "Flakes falling with a horizontal sway.",
 	Tags = "ambient,seasonal,background",
 	CommonKnobs = "Count,Speed,Size,Opacity,Seed,Direction,Gravity")]
-public sealed partial class SnowEffect : ParticleEffect
+public sealed partial class Snow : ParticleEffect
 {
 	private struct Flake
 	{
@@ -34,7 +34,7 @@ public sealed partial class SnowEffect : ParticleEffect
 	}
 
 	public static readonly DependencyProperty SwayProperty = DependencyProperty.Register(
-		nameof(Sway), typeof(double), typeof(SnowEffect), new PropertyMetadata(1d, OnVisualChanged));
+		nameof(Sway), typeof(double), typeof(Snow), new PropertyMetadata(1d, OnVisualChanged));
 
 	protected override int NaturalCount => 90;
 

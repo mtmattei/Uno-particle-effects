@@ -6,6 +6,7 @@ const int MAX_BALLS = 8;
 
 uniform float2 uResolution;
 uniform float3 uBalls[MAX_BALLS];
+uniform float  uCount;
 uniform float  uThreshold;
 uniform float4 uColor;
 
@@ -15,6 +16,15 @@ half4 main(float2 position)
 
     for (int i = 0; i < MAX_BALLS; ++i)
     {
+        // The array length is fixed, but the loop is not: on the CPU raster
+        // backend every iteration is interpreted per pixel, so skipping the
+        // unused slots is the difference between a heavy effect and an
+        // unusable one.
+        if (float(i) >= uCount)
+        {
+            break;
+        }
+
         float2 delta = position - uBalls[i].xy;
         float radius = uBalls[i].z;
         field += radius * radius / (dot(delta, delta) + 1.0);

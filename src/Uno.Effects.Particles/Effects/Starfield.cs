@@ -11,7 +11,7 @@ namespace Uno.Effects.Particles;
 	Description = "Stars streaming past the viewer.",
 	Tags = "motion,space,hero",
 	CommonKnobs = "Count,Speed,Size,Opacity,Seed")]
-public sealed partial class StarfieldEffect : ParticleEffect
+public sealed partial class Starfield : ParticleEffect
 {
 	private struct Star
 	{

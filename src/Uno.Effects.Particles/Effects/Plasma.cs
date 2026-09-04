@@ -12,7 +12,7 @@ namespace Uno.Effects.Particles;
 	Tags = "shader,generative,background",
 	IsShaderBased = true,
 	CommonKnobs = "Speed,Opacity,Seed")]
-public sealed partial class PlasmaEffect : ShaderEffect
+public sealed partial class Plasma : ShaderEffect
 {
 	protected override string ShaderResourceName => "Uno.Effects.Particles.Shaders.Plasma.sksl";
 

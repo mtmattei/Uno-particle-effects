@@ -19,6 +19,16 @@ public partial class App : Application
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
+        var options = StartupOptions.Parse(Environment.GetCommandLineArgs());
+
+        if (options.RunRenderTests)
+        {
+            // The tests need the app initialised (effects are DependencyObjects),
+            // but nothing on screen. Run them here and report through the exit code.
+            Environment.Exit(StartupOptions.RunRenderTestSuite(options.OutputDirectory) ? 0 : 1);
+            return;
+        }
+
         MainWindow = new Window();
 #if DEBUG
         MainWindow.UseStudio();
@@ -43,7 +53,14 @@ public partial class App : Application
             // When the navigation stack isn't restored navigate to the first page,
             // configuring the new page by passing required information as a navigation
             // parameter
-            rootFrame.Navigate(typeof(MainPage), args.Arguments);
+            rootFrame.Navigate(typeof(GridPage), args.Arguments);
+
+            // The app-side half of the docs embed route: --effect snow opens
+            // that effect directly, with the board still on the back stack.
+            if (options.EffectId is { Length: > 0 } effectId)
+            {
+                rootFrame.Navigate(typeof(DetailPage), effectId);
+            }
         }
 
         MainWindow.SetWindowIcon();

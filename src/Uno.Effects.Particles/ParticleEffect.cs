@@ -244,7 +244,7 @@ public abstract partial class ParticleEffect : DependencyObject
 	/// How much of the previous frame survives into this one: 1 clears
 	/// completely, lower values leave motion trails.
 	/// </summary>
-	protected internal virtual float TrailFade => 1f;
+	public virtual float TrailFade => 1f;
 
 	/// <summary>
 	/// Creates the particle pool for a surface of the given size. Called on
@@ -270,7 +270,13 @@ public abstract partial class ParticleEffect : DependencyObject
 	/// </summary>
 	internal float ElapsedTime;
 
-	internal void Render(SKCanvas canvas, in EffectFrame frame, bool reemit)
+	/// <summary>
+	/// Emits if needed, steps, and draws one frame. <see cref="ParticleView"/>
+	/// calls this; so does the render-test harness, which is the point of it
+	/// being public — an effect can be driven at a fixed timestep onto any
+	/// canvas, with no visual tree involved.
+	/// </summary>
+	public void Render(SKCanvas canvas, in EffectFrame frame, bool reemit)
 	{
 		if (reemit || !_emitted)
 		{

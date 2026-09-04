@@ -11,7 +11,7 @@ namespace Uno.Effects.Particles;
 	Description = "Particles carried by a slowly evolving noise field.",
 	Tags = "generative,trails,hero",
 	CommonKnobs = "Count,Speed,Size,Opacity,Seed,Direction")]
-public sealed partial class FlowFieldEffect : ParticleEffect
+public sealed partial class FlowField : ParticleEffect
 {
 	private struct Tracer
 	{
@@ -24,7 +24,7 @@ public sealed partial class FlowFieldEffect : ParticleEffect
 	protected override int NaturalCount => 140;
 
 	/// <summary>Only a twelfth of each frame is cleared, which is what leaves the trails.</summary>
-	protected internal override float TrailFade => 0.08f;
+	public override float TrailFade => 0.08f;
 
 	protected override void Emit(in EffectFrame frame)
 	{

@@ -1,0 +1,108 @@
+﻿<Page x:Class="Uno.Effects.Gallery.DetailPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="{StaticResource PaperBrush}">
+
+  <ScrollViewer Padding="0,0,0,72">
+    <StackPanel Padding="56,44,56,0" MaxWidth="1440">
+
+      <Button x:Name="BackButton"
+              Style="{StaticResource FlatButtonStyle}"
+              Content="Back to the board"
+              HorizontalAlignment="Left"
+              Margin="0,0,0,28" />
+
+      <Grid Margin="0,0,0,10">
+        <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Bottom">
+          <TextBlock x:Name="NumberLabel"
+                     Style="{StaticResource PageTitleStyle}"
+                     Foreground="{StaticResource MutedBrush}" />
+          <TextBlock x:Name="NameLabel" Style="{StaticResource PageTitleStyle}" />
+        </StackPanel>
+        <StackPanel x:Name="MetaHost"
+                    Orientation="Horizontal"
+                    Spacing="28"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom" />
+      </Grid>
+
+      <TextBlock x:Name="DescriptionLabel"
+                 Style="{StaticResource BodyStyle}"
+                 MaxWidth="640"
+                 HorizontalAlignment="Left"
+                 Margin="0,0,0,22" />
+
+      <Border Height="1" Background="{StaticResource RuleBrush}" Margin="0,0,0,28" />
+
+      <!-- Preview and property panel -->
+      <Grid ColumnDefinitions="*,320" ColumnSpacing="36">
+        <StackPanel Grid.Column="0" Spacing="14">
+          <Border x:Name="PreviewFrame"
+                  CornerRadius="3"
+                  Height="440"
+                  Background="{StaticResource TileSurfaceBrush}" />
+          <Grid>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Button x:Name="PlayButton" Style="{StaticResource FlatButtonStyle}" Content="Pause" />
+              <Button x:Name="SurfaceButton" Style="{StaticResource FlatButtonStyle}" Content="Light surface" />
+              <Button x:Name="DiagnosticsButton" Style="{StaticResource FlatButtonStyle}" Content="Diagnostics" />
+            </StackPanel>
+            <TextBlock x:Name="FpsLabel"
+                       Style="{StaticResource EyebrowStyle}"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Center" />
+          </Grid>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1">
+          <TextBlock Style="{StaticResource EyebrowStyle}" Text="PROPERTIES" Margin="0,0,0,16" />
+          <StackPanel x:Name="KnobHost" Spacing="14" />
+          <Button x:Name="ResetButton"
+                  Style="{StaticResource FlatButtonStyle}"
+                  Content="Reset to defaults"
+                  HorizontalAlignment="Left"
+                  Margin="0,22,0,0" />
+        </StackPanel>
+      </Grid>
+
+      <Border Height="1" Background="{StaticResource RuleBrush}" Margin="0,40,0,22" />
+
+      <!-- Code -->
+      <Grid Margin="0,0,0,14">
+        <ItemsControl x:Name="TabHost" HorizontalAlignment="Left">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal" Spacing="8" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+        </ItemsControl>
+        <Button x:Name="CopyButton"
+                Style="{StaticResource FlatButtonStyle}"
+                Content="Copy"
+                HorizontalAlignment="Right" />
+      </Grid>
+
+      <Border Background="{StaticResource PanelBrush}" CornerRadius="2" Padding="16,14">
+        <TextBlock x:Name="CodeBlock" Style="{StaticResource CodeStyle}" TextWrapping="Wrap" />
+      </Border>
+
+      <Grid Margin="0,14,0,0">
+        <TextBlock x:Name="InstallLabel"
+                   Style="{StaticResource CodeStyle}"
+                   Foreground="{StaticResource BodyBrush}"
+                   VerticalAlignment="Center" />
+        <Button x:Name="CopyInstallButton"
+                Style="{StaticResource FlatButtonStyle}"
+                Content="Copy install command"
+                HorizontalAlignment="Right" />
+      </Grid>
+
+      <TextBlock x:Name="MatrixNote"
+                 Style="{StaticResource BodyStyle}"
+                 MaxWidth="720"
+                 HorizontalAlignment="Left"
+                 Margin="0,30,0,0" />
+
+    </StackPanel>
+  </ScrollViewer>
+</Page>

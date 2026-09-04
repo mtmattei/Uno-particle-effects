@@ -88,7 +88,10 @@ public abstract partial class ShaderEffect : ParticleEffect
 	{
 		var source = EffectiveShaderSource;
 
-		if (_builder is not null && _compiledFrom == source)
+		// Compare against the source last compiled, not against the builder:
+		// a compile that failed must be remembered too, or a broken shader
+		// recompiles on every single frame and the app appears to hang.
+		if (_compiledFrom == source)
 		{
 			return _builder;
 		}
@@ -104,6 +107,10 @@ public abstract partial class ShaderEffect : ParticleEffect
 
 		if (_compiled is null)
 		{
+			// Surfacing this beats drawing nothing and leaving no trace; the
+			// gallery shows it on the SKSL tab, and it reaches the console for
+			// anyone running the render tests.
+			Console.WriteLine($"SKSL compile failed for {GetType().Name}: {_compileError}");
 			return null;
 		}
 
