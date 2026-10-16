@@ -1,79 +1,64 @@
-# Prompt — artsy effect captures
+# Prompt — artsy captures of any app
 
-Paste this into a fresh session that has `mtmattei/uno.particles` checked out.
+Paste into a session that has the project checked out. Fill in the `<…>` parts or delete them.
 
 ---
 
-Make a set of gallery-quality art images from the Uno.Effects library (`mtmattei/uno.particles`). They're for social posts, a landing page and launch material, so they should read as prints and look nothing like app screenshots. Every pixel must come from the effects themselves: no painting, no AI generation, no compositing of fake content.
+Make a set of gallery-quality, art-directed images of what this project draws: <its UI, components, charts, effects, game scenes, generated output>. They're for <social posts / landing page / launch / README>. They should read as prints or editorial images, not raw screenshots. Every pixel has to come from the project's own rendering. Don't paint over it, generate images with AI, or mock up fake content.
 
-**How to render**
+**1. Find the rendering seam**
 
-- Leave the app window alone for art. Drive the effects offscreen through the public `ParticleEffect.Render(canvas, in EffectFrame, reemit)`, at a fixed 1/60 s timestep. That's the same loop `tests/Uno.Effects.RuntimeTests/RenderTestRunner.cs` uses, and the same seed always gives the same image.
-- Render at a small logical size and scale the canvas up, so particle sizes stay as designed: 640×360, 480×480 or 480×600 logical, at ×4. That gives 2560×1440, 1920×1920 or 1920×2400.
-- Effects are DependencyObjects, so they need a running Uno app. Add a capture-only switch to the gallery: `--art <shots.json> <outDir>`. Keep it out of the library and don't commit it to `uno.particles`. Work in a scratch copy.
-- Each shot in the JSON lists:
-  - `name`, `w`, `h`, `scale`, `frames`, `surface` (hex)
-  - `layers[]`, each with an effect `id` from `Catalog.json`, a `palette` (hex list) and `props` (knob values set by reflection)
-  - optional `exposure` (N frames) and `blend` (`lighten` or `darken`)
-- Long exposure: lighten-blend the last N frames into an accumulator on dark surfaces, and darken-blend on light ones. This is the single biggest win for path and field effects.
+- Read the code and work out the lowest-level place where a visual gets drawn: a render or draw method, a component in isolation, a canvas or shader pass, a storybook story, a headless test harness, an export function.
+- Prefer driving that seam offscreen over screenshotting the running app. You get any resolution, a clean background and no chrome.
+- If something animates or simulates, step it with a fixed timestep and a fixed seed, so a shot can be reproduced exactly.
+- If there's no seam, run the app in a large window at 2× or 3× device scale and capture just the element. Hide the dev overlays and use a Release or production build.
+- Put any capture-only code (a CLI flag, a script, a story) in a scratch copy or a clearly separate tool. Leave the product code unchanged unless I say otherwise.
 
-**Curate before rendering big**
+**2. Survey, then curate**
 
-- Run `--render-tests --output <dir>` first and build an 8×8 contact sheet of the 256 px frames. Pick from that.
-- What worked best:
-  - Long exposure: Attractor (600 frames, exposure 400), Flow field (420/200), Curl noise (420/240), Vortex (360/90), Dipole (360/160), Galaxy (400/120), Orbits (600/300), Fireworks (400/240), Sparkler (300/45, at 200×250 ×8 so it fills the frame).
-  - Single frame: Phyllotaxis (`Count` 400, `Size` 1.6, 320×320 ×6), Constellation, Arcs, Plasma (`Cells` 96, or it looks blocky).
-  - Ink on paper: Lissajous (900/700, darken), Halftone, Metaballs.
-- Skip the effects that only read in motion: Rain, Dust, Grain, Static, Lightning and Fog.
+- Render everything once at small size and build a contact sheet.
+- Pick the 10–16 subjects with the strongest silhouette, texture or composition.
+- Leave out things that only make sense in motion or in context, and say which ones you skipped and why.
 
-**Palette** (the library's own)
+**3. Art direct from the project's own identity**
 
-| Role | Hex |
-|---|---|
-| Bone | `#E9E5DD` |
-| Amber | `#D6A068` |
-| Sage | `#96A38C` |
-| Clay | `#BE7860` |
-| Night surfaces | `#0F0F0E` to `#1A1918` |
-| Paper | `#EEEAE2` |
-| Ink | `#1F1E1C` |
+- Pull the palette, type and surfaces from the project's design tokens, theme or CSS. Use only those, plus one or two deliberate variations, for example inverting to a light "paper" surface with dark ink.
+- Vary the framing: wide 16:9 hero shots, squares, and 4:5 portraits.
+- Scale content up crisply. Render at a small logical size and multiply the scale, so stroke widths and spacing keep the proportions they were designed with.
+- For anything that moves, try a long exposure: blend the last N frames together (lighten on dark backgrounds, darken on light). For static UI, try tight detail crops, a repeated grid of states, or a single component isolated on a large empty field.
+- Tune the subject's own parameters (density, size, seed, data) for composition. Never draw anything new.
 
-Mostly bone on night, with amber as the accent. Do one or two in sage and amber, and three on paper.
+**4. Finishing pass** (a script, so it's repeatable)
 
-**Finishing pass** (Python with Pillow and numpy)
+- **Bloom:** apply it to bright pixels only, so the blacks stay black.
+- **Vignette and grain:** keep both subtle.
+- **Captions:** small and editorial, in the project's own typeface. Use real metadata (the item's name, number and description from the code), plus a small wordmark.
+- **Legibility:** wherever a caption would sit on busy content, add a soft scrim behind it.
+- **Variants:** export each piece with and without its caption, as high-quality JPEG (or PNG when there's no grain).
+- **Poster:** add one overview poster, a grid of the best pieces with a title and a one-line description of the project.
 
-- **Bloom, bright pixels only:** take `max(0, v − 48) × 1.4`, blur it at `max(w,h)/220` at 0.55 strength and at `max(w,h)/60` at 0.30, and screen both over the image. A plain blur lifts the blacks to grey haze, and you don't want that.
-- **Vignette:** 0.45 on dark images and 0.10 on paper, falling off from 35% of the radius.
-- **Grain:** monochrome Gaussian noise, sigma 4 on dark images and 5 on paper.
-- **Caption, bottom-left, in Inter:**
-  - Two-digit catalog number (muted), then the effect name (bone, or ink on paper), each at 3.2% of the short side.
-  - The effect's `[Effect(Description = …)]` on the line below at 1.7%.
-  - Bottom-right: `U N O . E F F E C T S` in Inter Medium at 1.45%.
-  - Margin: 6% of the short side.
-- **Scrim:** on dark full-bleed images, fade the bottom 28% towards 0.7× the median background, so the caption never sits on busy strokes.
-- **Export:** JPEG at quality 95 with 4:4:4 chroma (grain makes PNGs huge). Export each piece twice, with and without the caption.
-- **Poster:** a 4×4 grid poster of square centre crops (2400 wide). Put "Particles" in Inter Light at the top with a one-line subtitle, a label under each tile, and a footer with `<fx:ParticleView><fx:Snow /></fx:ParticleView>` in mono and the eyebrow on the right.
+**5. Review loop**
 
-**Review loop**
-
-After each batch, look at downscaled thumbnails and fix:
-- lifted blacks
+After each batch, look at downscaled thumbnails and fix what's wrong:
+- washed-out blacks
 - captions colliding with the subject
-- subjects too small or too sparse
-- blocky shaders
+- subjects too small or off-centre
+- banding, blocky or aliased edges
+- anything that misrepresents what the product actually does
 
 Re-render only the shots that need it.
 
-**Watch out for**
+**6. Honesty and delivery**
 
-- Shader effects (Metaballs, Plasma) are slow on the CPU raster. Metaballs at 1920×1080 for 200 frames takes about 5 minutes. Run batches in the background.
-- Build Release so the Debug Studio overlay doesn't show up.
-- Don't publish FPS or ms numbers measured in a VM.
-
-**Deliver**
-
-- `media/art/`: captioned pieces and the poster.
-- `media/art/clean/`
-- `media/_source/`: the shot JSON, the renderer, the finishing script and a README saying how each image was made.
+- Don't show performance numbers, data or states the product wouldn't really produce.
+- Note anything you tuned beyond the defaults.
+- Save the outputs in `<media/art/>` and `<media/art/clean/>`, plus `<media/_source/>` with the shot list, the capture code, the finishing script, and a README saying how each image was made and how to regenerate it.
+- Commit only to the branch I name.
+- Run slow renders in the background.
 
 ---
+
+## Optional add-ons
+
+- **Regular screenshots:** also capture 4–6 honest UI screenshots of the real app at a fixed window size, showing the main flows.
+- **Recording:** also record one 30–60 s real-time walkthrough of the real app with a scripted pointer. Don't speed it up.
