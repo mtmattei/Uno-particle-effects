@@ -1,0 +1,12 @@
+[
+ {"name":"plasma","w":640,"h":360,"scale":2,"frames":150,"surface":"#141413",
+  "layers":[{"id":"plasma","palette":["#D6A068","#96A38C"],"props":{"Cells":96}}]},
+ {"name":"phyllotaxis-amber","w":320,"h":320,"scale":6,"frames":300,"surface":"#1A1918",
+  "layers":[{"id":"phyllotaxis","palette":["#D6A068","#E9E5DD"],"props":{"Count":400,"Size":1.6}}]},
+ {"name":"sparkler-longexp","w":200,"h":250,"scale":8,"frames":300,"exposure":45,"surface":"#0F0F0E",
+  "layers":[{"id":"sparkler","palette":["#E9E5DD","#D6A068"]}]},
+ {"name":"bokeh-nebula","w":640,"h":360,"scale":4,"frames":300,"surface":"#121211",
+  "layers":[{"id":"nebula","palette":["#D6A068","#96A38C","#BE7860","#E9E5DD"]},{"id":"bokeh","palette":["#D6A068","#E9E5DD"]}]},
+ {"name":"sphere","w":320,"h":320,"scale":6,"frames":300,"surface":"#141413",
+  "layers":[{"id":"sphere","palette":["#E9E5DD","#D6A068"]}]}
+]
