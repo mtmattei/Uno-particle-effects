@@ -233,6 +233,12 @@ public sealed partial class Rain : ParticleEffect
 				drop.Y = -drop.Length;
 				drop.X = Random.Next(frame.Width + 30f);
 			}
+			else if (drop.Y < -drop.Length)
+			{
+				// Reversed gravity still recycles cleanly.
+				drop.Y = frame.Height + drop.Length;
+				drop.X = Random.Next(frame.Width + 30f);
+			}
 		}
 	}
 
@@ -453,6 +459,12 @@ public sealed partial class Confetti : ParticleEffect
 			if (piece.Y > frame.Height + 5)
 			{
 				piece.Y = -5;
+				piece.X = Random.Next(frame.Width);
+			}
+			else if (piece.Y < -5)
+			{
+				// Reversed gravity still recycles cleanly.
+				piece.Y = frame.Height + 5;
 				piece.X = Random.Next(frame.Width);
 			}
 		}
@@ -830,6 +842,12 @@ public sealed partial class Leaves : ParticleEffect
 			if (leaf.Y > frame.Height + 6)
 			{
 				leaf.Y = -6;
+				leaf.X = Random.Next(frame.Width);
+			}
+			else if (leaf.Y < -6)
+			{
+				// Reversed gravity still recycles cleanly.
+				leaf.Y = frame.Height + 6;
 				leaf.X = Random.Next(frame.Width);
 			}
 		}

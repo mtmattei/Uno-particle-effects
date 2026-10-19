@@ -346,6 +346,12 @@ public sealed partial class Embers : ParticleEffect
 				ember.Y = frame.Height + 3;
 				ember.X = Random.Next(frame.Width);
 			}
+			else if (ember.Y > frame.Height + 3)
+			{
+				// Negative gravity sinks embers; recycle them at the top.
+				ember.Y = -3;
+				ember.X = Random.Next(frame.Width);
+			}
 		}
 	}
 
@@ -657,7 +663,9 @@ public sealed partial class Fountain : ParticleEffect
 			drop.X += drop.VelocityX * frame.DeltaTime;
 			drop.Y += drop.VelocityY * frame.DeltaTime;
 
-			if (drop.Y >= surface)
+			// A drop that never comes down (zero or negative gravity) leaves at
+			// the top, or the pool fills and the jet stops.
+			if (drop.Y >= surface || drop.Y < -10f)
 			{
 				_drops[i] = _drops[--_live];
 			}
@@ -787,7 +795,17 @@ public sealed partial class Sparkle : ParticleEffect
 
 	protected override void Step(in EffectFrame frame)
 	{
-		if (Random.NextSingle() < 0.3f * frame.Density && _live < Capacity)
+		// Count scales the spawn rate: whole stars per step, plus a chance at
+		// one more for the fraction. At the default this is the original 0.3
+		// chance per step, drawing the same random numbers.
+		var rate = 0.3f * frame.Density * (Count > 0 ? Count : NaturalCount);
+		var spawn = (int)rate;
+		if (Random.NextSingle() < rate - spawn)
+		{
+			spawn++;
+		}
+
+		for (var k = 0; k < spawn && _live < Capacity; k++)
 		{
 			_stars[_live++] = new Star
 			{
@@ -932,6 +950,7 @@ public sealed partial class Meteors : ParticleEffect
 	}
 
 	private readonly Meteor[] _meteors = new Meteor[Capacity];
+	private readonly SKColor[] _tailColors = new SKColor[2];
 	private int _live;
 	private float _nextMeteor;
 
@@ -982,8 +1001,8 @@ public sealed partial class Meteors : ParticleEffect
 		paint.StrokeWidth = 1f * size;
 		paint.Color = SKColors.White;
 
-		var head = WithAlpha(Primary, 0.9f);
-		var tail = Primary.WithAlpha(0);
+		_tailColors[0] = WithAlpha(Primary, 0.9f);
+		_tailColors[1] = Primary.WithAlpha(0);
 
 		for (var i = 0; i < _live; i++)
 		{
@@ -997,7 +1016,7 @@ public sealed partial class Meteors : ParticleEffect
 			using var shader = SKShader.CreateLinearGradient(
 				new SKPoint(meteor.X, meteor.Y),
 				new SKPoint(tipX, tipY),
-				[head, tail],
+				_tailColors,
 				SKShaderTileMode.Clamp);
 
 			paint.Shader = shader;

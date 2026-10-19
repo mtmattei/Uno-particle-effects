@@ -377,7 +377,7 @@ public abstract partial class ParticleEffect : DependencyObject, IDisposable
 	{
 		if (disposing)
 		{
-			DisposePaint();
+			DisposeDrawingObjects();
 		}
 	}
 

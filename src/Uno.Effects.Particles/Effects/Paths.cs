@@ -273,7 +273,7 @@ public sealed partial class SinePath : ParticleEffect
 		paint.StrokeWidth = 1f;
 		paint.Color = WithAlpha(Primary, 0.12f);
 
-		using var path = new SKPath();
+		var path = RewoundPath();
 		path.MoveTo(0, WaveAt(0, in frame));
 
 		for (var x = 2f; x <= frame.Width; x += 2f)
@@ -350,7 +350,11 @@ public sealed partial class Constellation : ParticleEffect
 	protected override void Draw(SKCanvas canvas, in EffectFrame frame)
 	{
 		var size = ResolveSize();
-		var reach = frame.Width * 0.25f;
+		// Scaled by the area the nodes spread over, so a wide frame links about
+		// as many neighbours as a square one. On a square this is a quarter of
+		// the width, as designed.
+		var reach = MathF.Sqrt(frame.Width * frame.Height) * 0.25f;
+		var reachSquared = reach * reach;
 
 		var paint = Paint;
 		paint.Style = SKPaintStyle.Stroke;
@@ -366,10 +370,12 @@ public sealed partial class Constellation : ParticleEffect
 			for (var j = i + 1; j < _nodes.Length; j++)
 			{
 				var b = _nodes[j];
-				var distance = MathF.Sqrt(((a.X - b.X) * (a.X - b.X)) + ((a.Y - b.Y) * (a.Y - b.Y)));
+				var distanceSquared = ((a.X - b.X) * (a.X - b.X)) + ((a.Y - b.Y) * (a.Y - b.Y));
 
-				if (distance < reach)
+				// Square root only for the pairs that are actually linked.
+				if (distanceSquared < reachSquared)
 				{
+					var distance = MathF.Sqrt(distanceSquared);
 					paint.Style = SKPaintStyle.Stroke;
 					paint.StrokeWidth = 0.6f;
 					paint.Color = WithAlpha(Primary, (1f - (distance / reach)) * 0.4f);
@@ -457,7 +463,7 @@ public sealed partial class Orbits : ParticleEffect
 	Cost = EffectCost.Light,
 	Description = "A grid of points riding a diagonal travelling wave.",
 	Tags = "grid,geometry,calm",
-	CommonKnobs = "Count,Speed,Size,Opacity,Seed")]
+	CommonKnobs = "Count,Speed,Size,Opacity")]
 public sealed partial class Wave : ParticleEffect
 {
 	protected override int NaturalCount => 14;
@@ -493,7 +499,7 @@ public sealed partial class Wave : ParticleEffect
 	Cost = EffectCost.Light,
 	Description = "A lissajous figure drawn by a train of points.",
 	Tags = "geometry,trails,hero",
-	CommonKnobs = "Count,Speed,Size,Opacity,Seed")]
+	CommonKnobs = "Count,Speed,Size,Opacity")]
 public sealed partial class Lissajous : ParticleEffect
 {
 	private float[] _offsets = [];
@@ -607,7 +613,7 @@ public sealed partial class Galaxy : ParticleEffect
 	Cost = EffectCost.Light,
 	Description = "A twisted ladder, its rails swapping depth as they turn.",
 	Tags = "geometry,science,hero",
-	CommonKnobs = "Speed,Size,Opacity,Seed")]
+	CommonKnobs = "Speed,Size,Opacity")]
 public sealed partial class Helix : ParticleEffect
 {
 	private const int Rungs = 22;
@@ -699,19 +705,27 @@ public sealed partial class Cascade : ParticleEffect
 				column.Y = -Random.Next(frame.Height);
 				column.Speed = (Random.NextSingle() * 60f) + 50f;
 			}
+			else if (column.Y < -frame.Height - 10)
+			{
+				// Reversed gravity: re-enter from below.
+				column.Y = frame.Height + Random.Next(frame.Height);
+				column.Speed = (Random.NextSingle() * 60f) + 50f;
+			}
 		}
 	}
 
 	protected override void Draw(SKCanvas canvas, in EffectFrame frame)
 	{
 		var cell = frame.Width / Columns;
+		var block = cell * 0.4f * ResolveSize();
+		var inset = (cell - block) / 2f;
 
 		for (var i = 0; i < Columns; i++)
 		{
 			// Snapping y to the cell height is what makes it step rather than
 			// slide, and is the whole character of the effect.
 			var y = MathF.Floor(_columns[i].Y / cell) * cell;
-			Rect(canvas, (i * cell) + (cell * 0.3f), y + (cell * 0.3f), cell * 0.4f, cell * 0.4f, Primary, 0.9f);
+			Rect(canvas, (i * cell) + inset, y + inset, block, block, Primary, 0.9f);
 		}
 	}
 }
@@ -721,7 +735,7 @@ public sealed partial class Cascade : ParticleEffect
 	Cost = EffectCost.Light,
 	Description = "A ring that swells and contracts, roughened by noise.",
 	Tags = "calm,organic,minimal",
-	CommonKnobs = "Count,Speed,Size,Opacity,Seed")]
+	CommonKnobs = "Count,Speed,Size,Opacity")]
 public sealed partial class Breath : ParticleEffect
 {
 	private int _count;
@@ -764,7 +778,7 @@ public sealed partial class Breath : ParticleEffect
 	Cost = EffectCost.Medium,
 	Description = "The sunflower spiral, with a pulse running outwards.",
 	Tags = "geometry,organic,hero",
-	CommonKnobs = "Count,Speed,Size,Opacity,Seed")]
+	CommonKnobs = "Count,Speed,Size,Opacity")]
 public sealed partial class Phyllotaxis : ParticleEffect
 {
 	/// <summary>The golden angle, in radians.</summary>
@@ -806,7 +820,7 @@ public sealed partial class Phyllotaxis : ParticleEffect
 	Cost = EffectCost.Light,
 	Description = "A lattice of points turning in perspective.",
 	Tags = "3d,geometry,minimal",
-	CommonKnobs = "Speed,Size,Opacity,Seed")]
+	CommonKnobs = "Speed,Size,Opacity")]
 public sealed partial class Cube : ParticleEffect
 {
 	private const int Side = 5;
@@ -848,7 +862,7 @@ public sealed partial class Cube : ParticleEffect
 	Cost = EffectCost.Medium,
 	Description = "Points spread evenly over a sphere, turning.",
 	Tags = "3d,geometry,hero",
-	CommonKnobs = "Count,Speed,Size,Opacity,Seed")]
+	CommonKnobs = "Count,Speed,Size,Opacity")]
 public sealed partial class Sphere : ParticleEffect
 {
 	private const float GoldenAngle = 2.39996f;

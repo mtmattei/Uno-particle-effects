@@ -12,6 +12,7 @@ public abstract partial class ParticleEffect
 	protected const float Tau = MathF.PI * 2f;
 
 	private SKPaint? _paint;
+	private SKPath? _path;
 
 	/// <summary>
 	/// A single antialiased paint reused for the whole effect. Effects mutate
@@ -20,10 +21,23 @@ public abstract partial class ParticleEffect
 	/// </summary>
 	protected SKPaint Paint => _paint ??= new SKPaint { IsAntialias = true };
 
-	private protected void DisposePaint()
+	/// <summary>
+	/// A path to build outlines into, rewound and reused every frame so drawing
+	/// one does not create a native object per frame.
+	/// </summary>
+	protected SKPath RewoundPath()
+	{
+		_path ??= new SKPath();
+		_path.Rewind();
+		return _path;
+	}
+
+	private protected void DisposeDrawingObjects()
 	{
 		_paint?.Dispose();
 		_paint = null;
+		_path?.Dispose();
+		_path = null;
 	}
 
 	/// <summary>Fills a circle in the given colour at the given alpha.</summary>

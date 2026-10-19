@@ -95,7 +95,7 @@ public sealed partial class Follow : ParticleEffect
 	Description = "A grid that pushes away from the pointer and springs back.",
 	Tags = "pointer,grid,tactile",
 	RespondsToPointer = true,
-	CommonKnobs = "Count,Speed,Size,Opacity,Seed")]
+	CommonKnobs = "Count,Speed,Size,Opacity")]
 public sealed partial class Repel : ParticleEffect
 {
 	private struct Node
@@ -123,8 +123,10 @@ public sealed partial class Repel : ParticleEffect
 
 	protected override void Emit(in EffectFrame frame)
 	{
+		// Rows follow the aspect ratio, so the lattice stays square on a wide
+		// or tall frame.
 		var columns = ResolveGridColumns(in frame);
-		var rows = columns;
+		var rows = Math.Max(1, (int)MathF.Round(frame.Height * columns / MathF.Max(frame.Width, 1f)));
 		_nodes = new Node[columns * rows];
 
 		var index = 0;
@@ -183,7 +185,7 @@ public sealed partial class Repel : ParticleEffect
 	Description = "A hexagonal lattice rippling outwards from the pointer.",
 	Tags = "pointer,grid,ripple",
 	RespondsToPointer = true,
-	CommonKnobs = "Count,Speed,Size,Opacity,Seed")]
+	CommonKnobs = "Count,Speed,Size,Opacity")]
 public sealed partial class Lattice : ParticleEffect
 {
 	/// <summary>Row spacing as a fraction of column spacing, for a regular hex grid.</summary>
@@ -235,7 +237,7 @@ public sealed partial class Lattice : ParticleEffect
 	Description = "Iron filings aligning to the field around the pointer.",
 	Tags = "pointer,magnetic,grid",
 	RespondsToPointer = true,
-	CommonKnobs = "Count,Speed,Size,Opacity,Seed")]
+	CommonKnobs = "Count,Speed,Size,Opacity")]
 public sealed partial class Filings : ParticleEffect
 {
 	protected override int NaturalCount => 14;

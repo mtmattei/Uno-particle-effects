@@ -197,7 +197,7 @@ public sealed partial class Grain : ParticleEffect
 	Cost = EffectCost.Medium,
 	Description = "Rings of dots swelling as a wave passes through them.",
 	Tags = "grid,print,graphic",
-	CommonKnobs = "Count,Speed,Opacity,Seed")]
+	CommonKnobs = "Count,Speed,Opacity")]
 public sealed partial class Halftone : ParticleEffect
 {
 	protected override int NaturalCount => 14;
@@ -238,7 +238,7 @@ public sealed partial class Halftone : ParticleEffect
 	Cost = EffectCost.Medium,
 	Description = "Curtains of light rising from a noise baseline.",
 	Tags = "sky,colour,soft",
-	CommonKnobs = "Speed,Opacity,Seed")]
+	CommonKnobs = "Speed,Opacity")]
 public sealed partial class Aurora : ParticleEffect
 {
 	protected override int NaturalCount => 0;
@@ -282,7 +282,7 @@ public sealed partial class Aurora : ParticleEffect
 	Cost = EffectCost.Medium,
 	Description = "A grid of points jittered by noise.",
 	Tags = "grid,texture,calm",
-	CommonKnobs = "Count,Speed,Size,Opacity,Seed")]
+	CommonKnobs = "Count,Speed,Size,Opacity")]
 public sealed partial class Shimmer : ParticleEffect
 {
 	protected override int NaturalCount => 16;
@@ -380,7 +380,7 @@ public sealed partial class Static : ParticleEffect
 	Cost = EffectCost.Medium,
 	Description = "A grid of dots breathing on a slow noise field.",
 	Tags = "grid,calm,texture",
-	CommonKnobs = "Count,Speed,Opacity,Seed")]
+	CommonKnobs = "Count,Speed,Opacity")]
 public sealed partial class PulseGrid : ParticleEffect
 {
 	protected override int NaturalCount => 12;
@@ -416,7 +416,7 @@ public sealed partial class PulseGrid : ParticleEffect
 	Cost = EffectCost.Light,
 	Description = "A single soft mass whose outline is deformed by noise.",
 	Tags = "organic,minimal,hero",
-	CommonKnobs = "Speed,Size,Opacity,Seed")]
+	CommonKnobs = "Speed,Size,Opacity")]
 public sealed partial class Blob : ParticleEffect
 {
 	private const int Segments = 64;
@@ -439,7 +439,7 @@ public sealed partial class Blob : ParticleEffect
 		var baseRadius = extent * 0.22f * ResolveSize();
 		var wobble = extent * 0.16f;
 
-		using var path = new SKPath();
+		var path = RewoundPath();
 
 		for (var i = 0; i <= Segments; i++)
 		{

@@ -288,7 +288,7 @@ public sealed partial class Flock : ParticleEffect
 		paint.Style = SKPaintStyle.Fill;
 		paint.Color = WithAlpha(Primary, 0.9f);
 
-		using var path = new SKPath();
+		var path = RewoundPath();
 
 		foreach (var boid in _boids)
 		{
@@ -344,7 +344,10 @@ public sealed partial class Gravity : ParticleEffect
 	private Body Launch(in EffectFrame frame)
 	{
 		var angle = Random.Next(Tau);
-		var radius = frame.Width * (0.3f + (Random.NextSingle() * 0.18f));
+		// The shorter side, so every orbit fits a wide or tall frame; floored so
+		// a zero-sized frame cannot divide by zero below.
+		var extent = MathF.Max(1f, MathF.Min(frame.Width, frame.Height));
+		var radius = extent * (0.3f + (Random.NextSingle() * 0.18f));
 		var speed = MathF.Sqrt(9000f / radius) * (0.75f + (Random.NextSingle() * 0.5f)) * Random.Sign();
 
 		return new Body
@@ -432,7 +435,7 @@ public sealed partial class Ripples : ParticleEffect
 
 	protected override void Step(in EffectFrame frame)
 	{
-		var limit = frame.Width * 0.4f;
+		var limit = MathF.Min(frame.Width, frame.Height) * 0.4f;
 
 		_nextRing -= frame.DeltaTime;
 
@@ -460,7 +463,7 @@ public sealed partial class Ripples : ParticleEffect
 
 	protected override void Draw(SKCanvas canvas, in EffectFrame frame)
 	{
-		var limit = frame.Width * 0.4f;
+		var limit = MathF.Min(frame.Width, frame.Height) * 0.4f;
 		var size = ResolveSize();
 		var paint = Paint;
 		paint.Style = SKPaintStyle.Stroke;
