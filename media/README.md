@@ -9,26 +9,71 @@ Captured from `mtmattei/uno.particles` @ `681211d`, gallery Release build, Skia 
 | `screenshots/` | Real gallery UI at 1600×1000: board, filtered board, detail pages, light surface, SKSL tab, diagnostics. |
 | `recording/` | `gallery-walkthrough.mp4` — 45 s, 1600×1000, 30 fps, real time. |
 | `tweet.md` | Launch tweet drafts and which images to attach. |
-| `_source/` | Everything needed to regenerate the set. |
+| `_source/` | Shot lists and scripts to regenerate the art, poster and recording. |
 
 ## How the art was made
 
 The effects were driven by their own `ParticleEffect.Render` at a fixed 1/60 s timestep,
 the same loop the render tests use, but at 1280–2560 px instead of 256. Files named
 `*-longexp` lighten-blend the last N frames into one image (a long exposure); `*-paper`
-uses a light surface with dark ink and darken-blends. No pixels are painted by hand. The
-finishing pass (`finish.py`) adds bloom on bright pixels only, a vignette, film grain and
-the caption.
+uses a light surface with dark ink and darken-blends. No pixels are painted by hand.
+
+Palettes are built around the gallery's amber accent (`#D6A068`) and warm neutrals close to
+its surfaces. The only knobs moved off their defaults are Plasma (`Cells` 96) and Phyllotaxis
+(`Count` 400, `Size` 1.6), as listed in `shots.json`. The finishing pass (`finish.py`) adds
+bloom on bright pixels only, a vignette, film grain and the caption.
 
 ## Regenerate
 
-1. Copy `_source/ArtRenderer.cs` into `samples/Gallery/Uno.Effects.Gallery/` and apply
-   `_source/App.xaml.cs.capture.patch` (adds `--art <spec.json> <outDir>` and `--window WxH`).
-   This patch is for capture only and is not meant for the library.
-2. `dotnet build samples/Gallery/Uno.Effects.Gallery -f net10.0-desktop -c Release`
-3. `Uno.Effects.Gallery --art art1.json raw/` then `--art art2.json raw/`
-4. `python3 finish.py raw/ out/`
-5. Recording: run the gallery with `--window 1600x1000`, start `ffmpeg -f x11grab`, run `drive.py` (xdotool).
+Needs a checkout of `mtmattei/uno.particles` at `681211d` (private for now), the .NET 10 SDK,
+and Python 3 with Pillow and NumPy. Fonts: Inter and DejaVu Sans Mono. If they are not in a
+standard font folder, set `UNO_FX_FONTS` to the folder that has them.
+
+From the library root, with `SRC` set to this repo's `media/_source` folder:
+
+```
+git apply $SRC/App.xaml.cs.capture.patch
+cp $SRC/ArtRenderer.cs samples/Gallery/Uno.Effects.Gallery/
+dotnet build samples/Gallery/Uno.Effects.Gallery -f net10.0-desktop -c Release
+```
+
+The patch adds `--art <spec.json> <outDir>` and `--window WxH` to the gallery. It is for capture
+only and is not meant for the library.
+
+Then, with `G` set to `samples/Gallery/Uno.Effects.Gallery/bin/Release/net10.0-desktop/Uno.Effects.Gallery`
+(`.exe` on Windows, called as `& $G` in PowerShell; prefix `xvfb-run -a` on a Linux box with no display):
+
+```
+$G --art $SRC/shots.json raw/
+python $SRC/finish.py raw/ out/
+python $SRC/poster.py out/clean out/00-library-poster.jpg
+```
+
+`out/` then mirrors `art/`. The full-size renders take a few minutes; for a quick check, set
+`"scale": 1` on every shot.
+
+| File | Role |
+|---|---|
+| `shots.json` | The 16 published shots and their final parameters. |
+| `candidates.json` | Two shots that were rendered and not kept (bokeh over nebula, sphere). Kept so they can be revisited. |
+| `ArtRenderer.cs` | Capture-only renderer: fixed timestep, any size, optional long exposure. |
+| `finish.py` | Bloom, vignette, grain, scrim and caption. Captions are the catalog's own number, name and description. |
+| `poster.py` | The 4×4 library poster from `art/clean`. |
+| `drive.py` | Scripted pointer for the recording. |
+
+### Recording
+
+Linux only (`xdotool`). Run the gallery with `--window 1600x1000` with its client area at the
+top-left of the display, then:
+
+```
+ffmpeg -f x11grab -video_size 1600x1000 -framerate 30 -i $DISPLAY -c:v libx264 -pix_fmt yuv420p -crf 18 gallery-walkthrough.mp4 &
+python drive.py
+```
+
+`drive.py` uses fixed screen coordinates for that window size. The ffmpeg line reproduces the
+published file's format (H.264, 1600×1000, 30 fps); the exact flags of the original capture
+were not recorded.
 
 ## Caveat on numbers
 

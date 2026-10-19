@@ -1,6 +1,9 @@
 # Tweet — Uno.Effects
 
-## Main (250 chars)
+## Main (255 of 280)
+
+X counts each `→` and the emoji as 2. A link on its own line adds 25, which lands exactly on the 280 limit:
+it fits, with no room for any edit. Trim a line first if you change the wording.
 
 ```
 64 particle & shader effects for Uno Platform you can just copy & paste.
@@ -22,7 +25,7 @@ Save this 🔖
 
 Or swap images 2–4 for `recording/gallery-walkthrough.mp4` (45 s, 1600×1000).
 
-## Short (118 chars)
+## Short (119 of 280)
 
 ```
 Beautiful particle effects for your Uno Platform app. Just copy & paste.
@@ -32,7 +35,7 @@ Beautiful particle effects for your Uno Platform app. Just copy & paste.
 Save this 🔖
 ```
 
-## Code-forward (for a dev audience)
+## Code-forward (176 of 280, for a dev audience)
 
 ```
 Make your Uno Platform app feel alive.
