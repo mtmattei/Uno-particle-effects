@@ -95,6 +95,9 @@ public abstract partial class ParticleEffect
 		var sinPitch = MathF.Sin(pitch);
 		var size = ResolveSize();
 
+		// The shorter side, so the shape stays inside a wide or tall frame.
+		var extent = MathF.Min(frame.Width, frame.Height);
+
 		foreach (var point in points)
 		{
 			var x = (point.X * cosYaw) + (point.Z * sinYaw);
@@ -102,7 +105,7 @@ public abstract partial class ParticleEffect
 			var y = (point.Y * cosPitch) - (z * sinPitch);
 			z = (point.Y * sinPitch) + (z * cosPitch);
 
-			var scale = 1f / (1.8f + z) * frame.Width * 0.9f;
+			var scale = 1f / (1.8f + z) * extent * 0.9f;
 			var radius = (((1f - z) * 1.1f) + 0.4f) * size;
 			var alpha = MathF.Min(1f, 0.35f + ((0.5f - z) * 0.6f));
 

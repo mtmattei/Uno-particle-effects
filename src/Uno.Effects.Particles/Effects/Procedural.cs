@@ -42,7 +42,7 @@ public sealed partial class Plasma : ShaderEffect
 
 	protected override void SetUniforms(SKRuntimeEffectUniforms uniforms, in EffectFrame frame)
 	{
-		uniforms["uResolution"] = new[] { frame.Width, frame.Height };
+		uniforms["uResolution"] = new SKSize(frame.Width, frame.Height);
 		uniforms["uTime"] = frame.Time;
 		uniforms["uCells"] = (float)Cells;
 		SetColor(uniforms, "uColor", Accent, (float)Opacity);
@@ -132,7 +132,7 @@ public sealed partial class Metaballs : ShaderEffect
 			_uniformBalls[(i * 3) + 2] = ball.Radius * scale;
 		}
 
-		uniforms["uResolution"] = new[] { frame.Width, frame.Height };
+		uniforms["uResolution"] = new SKSize(frame.Width, frame.Height);
 		uniforms["uBalls"] = _uniformBalls;
 		uniforms["uCount"] = (float)_balls.Length;
 		uniforms["uThreshold"] = (float)Threshold;

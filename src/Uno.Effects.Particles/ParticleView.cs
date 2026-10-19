@@ -14,6 +14,18 @@ namespace Uno.Effects.Particles;
 /// <summary>A XAML-instantiable list of effects, used as the layers of a view.</summary>
 public sealed class EffectCollection : ObservableCollection<ParticleEffect>
 {
+	/// <summary>
+	/// Clears one item at a time. A plain Reset carries no old items, so the
+	/// owning view could not unsubscribe from the effects it just lost, and an
+	/// effect moved to another view would keep invalidating this one.
+	/// </summary>
+	protected override void ClearItems()
+	{
+		for (var i = Count - 1; i >= 0; i--)
+		{
+			RemoveAt(i);
+		}
+	}
 }
 
 /// <summary>
@@ -39,6 +51,7 @@ public partial class ParticleView : SKCanvasElement
 	private readonly Stopwatch _clock = new();
 	private SKSurface? _surface;
 	private SKPaint? _blitPaint;
+	private SKPaint? _fadePaint;
 	private SKFont? _diagnosticsFont;
 	private SKPaint? _diagnosticsPaint;
 
@@ -265,6 +278,8 @@ public partial class ParticleView : SKCanvasElement
 		_blitPaint?.Dispose();
 		_blitPaint = null;
 		_blitPaintValid = false;
+		_fadePaint?.Dispose();
+		_fadePaint = null;
 		_diagnosticsFont?.Dispose();
 		_diagnosticsFont = null;
 		_diagnosticsPaint?.Dispose();
@@ -471,6 +486,16 @@ public partial class ParticleView : SKCanvasElement
 		var start = Stopwatch.GetTimestamp();
 		var offscreen = surface.Canvas;
 
+		// A theme switch or a ColorAnimation changes a brush's colour in place,
+		// which raises no property change here. Reading a handful of colours a
+		// frame is cheap; holding callbacks on app-lifetime brushes would leak.
+		UpdateSurfaceColor();
+		var layers = Effects;
+		for (var i = 0; i < layers.Count; i++)
+		{
+			layers[i].RefreshPalette();
+		}
+
 		offscreen.Save();
 		offscreen.Scale(scale);
 
@@ -596,8 +621,11 @@ public partial class ParticleView : SKCanvasElement
 		var density = (float)EffectiveDensity;
 		var total = 0;
 
-		foreach (var effect in effects)
+		// Indexed rather than foreach: Collection<T> hands out a boxed
+		// enumerator, which would be an allocation every frame.
+		for (var i = 0; i < effects.Count; i++)
 		{
+			var effect = effects[i];
 			var effectDelta = delta * (float)effect.Speed;
 			effect.ElapsedTime += effectDelta;
 
@@ -633,7 +661,7 @@ public partial class ParticleView : SKCanvasElement
 			return;
 		}
 
-		using var paint = new SKPaint { IsAntialias = false };
+		var paint = _fadePaint ??= new SKPaint { IsAntialias = false };
 
 		if (background.Alpha == 0)
 		{
@@ -700,9 +728,8 @@ public partial class ParticleView : SKCanvasElement
 	}
 
 	/// <summary>
-	/// The surface colour, resolved once per change rather than per frame. It is
-	/// read twice a frame by every view on the board, and a dependency-property
-	/// lookup plus a brush cast is not free at that rate.
+	/// The surface colour, resolved once per frame rather than at each of its
+	/// reads.
 	/// </summary>
 	private SKColor SurfaceColor => _surfaceColor;
 

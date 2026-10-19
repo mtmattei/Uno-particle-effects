@@ -240,6 +240,31 @@ public abstract partial class ParticleEffect : DependencyObject, IDisposable
 	/// <summary>A colour at the given alpha, after <see cref="Opacity"/>.</summary>
 	protected SKColor WithAlpha(SKColor color, float alpha) => color.WithAlpha(Alpha(alpha));
 
+	/// <summary>
+	/// Drops the resolved palette if a brush's colour changed in place since it
+	/// was resolved. The owning view calls this once per frame.
+	/// </summary>
+	internal void RefreshPalette()
+	{
+		if (!_paletteValid || Palette is not { Count: > 0 } palette)
+		{
+			return;
+		}
+
+		for (var i = 0; i < _resolvedPalette.Length; i++)
+		{
+			if (palette[i % palette.Count] is SolidColorBrush solid)
+			{
+				var c = solid.Color;
+				if (_resolvedPalette[i] != new SKColor(c.R, c.G, c.B, c.A))
+				{
+					_paletteValid = false;
+					return;
+				}
+			}
+		}
+	}
+
 	private void EnsurePalette()
 	{
 		if (_paletteValid)

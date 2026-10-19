@@ -20,6 +20,7 @@ public abstract partial class ShaderEffect : ParticleEffect
 	private SKRuntimeShaderBuilder? _builder;
 	private string? _compiledFrom;
 	private string? _compileError;
+	private string? _embeddedSource;
 
 	/// <summary>
 	/// The SKSL source. Defaults to the embedded resource named by
@@ -44,7 +45,7 @@ public abstract partial class ShaderEffect : ParticleEffect
 	protected override int NaturalCount => 0;
 
 	/// <summary>The effective SKSL: the override if set, else the embedded resource.</summary>
-	public string EffectiveShaderSource => ShaderSource ?? LoadEmbeddedShader();
+	public string EffectiveShaderSource => ShaderSource ?? (_embeddedSource ??= LoadEmbeddedShader());
 
 	private string LoadEmbeddedShader()
 	{
@@ -121,13 +122,11 @@ public abstract partial class ShaderEffect : ParticleEffect
 	/// <summary>Writes a colour as a premultiplication-ready RGBA uniform.</summary>
 	protected static void SetColor(SKRuntimeEffectUniforms uniforms, string name, SKColor color, float alpha)
 	{
-		uniforms[name] = new[]
-		{
+		uniforms[name] = new SKColorF(
 			color.Red / 255f,
 			color.Green / 255f,
 			color.Blue / 255f,
-			Math.Clamp(color.Alpha / 255f * alpha, 0f, 1f),
-		};
+			Math.Clamp(color.Alpha / 255f * alpha, 0f, 1f));
 	}
 
 	protected override void Dispose(bool disposing)
