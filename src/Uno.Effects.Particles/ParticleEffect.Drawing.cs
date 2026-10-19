@@ -131,11 +131,6 @@ public abstract partial class ParticleEffect
 	}
 
 	/// <summary>
-	/// Columns for a grid-based effect. The device tier scales by the square
-	/// root so a busier device gets a finer grid rather than a stretched one,
-	/// and <see cref="Count"/> overrides the designed value.
-	/// </summary>
-	/// <summary>
 	/// The frame rate the effects were tuned at. Per-step constants (a damping
 	/// factor, a spawn count) mean "per 1/60 s", and the helpers below rescale
 	/// them to the actual frame time, so an effect looks the same at 30, 60 or
@@ -163,6 +158,11 @@ public abstract partial class ParticleEffect
 		return spawn;
 	}
 
+	/// <summary>
+	/// Columns for a grid-based effect. The device tier scales by the square
+	/// root so a busier device gets a finer grid rather than a stretched one,
+	/// and <see cref="Count"/> overrides the designed value.
+	/// </summary>
 	protected int ResolveGridColumns(in EffectFrame frame) =>
 		Math.Max(2, (int)MathF.Round((Count > 0 ? Count : NaturalCount) * MathF.Sqrt(frame.Density)));
 
