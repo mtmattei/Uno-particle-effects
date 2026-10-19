@@ -1,0 +1,4 @@
+# Intermediate output from the capture pipeline (see media/README.md)
+raw/
+out/
+__pycache__/

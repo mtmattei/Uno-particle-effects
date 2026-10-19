@@ -1,0 +1,12 @@
+* text=auto
+
+# The capture patch must keep LF endings to apply against the library sources.
+*.patch text eol=lf
+*.py    text eol=lf
+*.cs    text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+
+*.jpg binary
+*.png binary
+*.mp4 binary
