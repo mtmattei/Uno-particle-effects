@@ -1,5 +1,5 @@
 # HANDOFF — Uno.Effects (particles library + gallery)
-Updated: 2026-09-04 16:37
+Updated: 2026-10-19
 
 ## Where we are
 
@@ -11,52 +11,68 @@ studies from `effects.js` are ported to C#/SkiaSharp behind a single
 panel, generated XAML/C#/SKSL), a deterministic render-test harness, and a
 packable `Uno.Effects.Particles` 0.1.0 NuGet carrying both heads. Since then:
 a measured performance pass (worst frame 226 ms → 9.7 ms) and a fix for a
-device-tier density the docs claimed but the code never implemented.
+device-tier density the docs claimed but the code never implemented. In October:
+a review pass (allocation, sizing, reversed gravity, frame-rate independence),
+security pins, CI, and the merge into the public `Uno-particle-effects` repo.
 
 Full detail is in `README.md`; the reasoning, measurements and findings that
 should go back to the recommendation are in `docs/session-log.md`.
 
 ## Last verified state
 
-- **Build:** pass. Whole solution, both TFMs (`net10.0-desktop`,
-  `net10.0-browserwasm`), **zero warnings**. Uno.Sdk pinned to stable 6.7.22.
-- **Runtime:** verified by running the desktop head. Board renders all 64 tiles,
-  filter chips work, tile → detail navigation works, property panel, light/dark
-  surface toggle, diagnostics overlay, Copy XAML all confirmed by screenshot.
-- **Tests:** `--render-tests` exits 0. All 64 effects deterministic across two
-  runs at frames 0/60/300, each draws something, palette override changes
-  pixels, density scales the count. Hashes are **unchanged** across the
-  performance pass and the density fix.
-- **Git:** `main`, clean tree, last commit `fbd964e`, pushed to
-  `mtmattei/uno.particles` (private).
+Re-verified 2026-10-19 in a Linux cloud session, after this repo was merged into
+the public `mtmattei/Uno-particle-effects` (full history kept; the library sits
+at the root, launch media under `media/`).
+
+- **Build:** pass. Whole solution, both TFMs, **zero warnings** with
+  `-warnaserror`. Two transitive security pins in `Directory.Packages.props`
+  (System.Security.Cryptography.Pkcs/.Xml 10.0.13).
+- **Tests:** `--render-tests` exits 0 on Skia Desktop (Linux, Xvfb). All 64
+  hashes are **unchanged** by the October fixes (shader source caching,
+  per-frame allocation cuts, wide-frame sizing, reversed gravity,
+  frame-rate-independent spawns and damping).
+- **CI:** `.github/workflows/ci.yml` builds both heads, runs the render tests
+  under Xvfb, packs the NuGet. Validated step by step locally; its first run on
+  GitHub is still to come.
+- **Runtime:** the gallery board and detail page were not re-run interactively
+  this session; wide-frame and reversed-gravity fixes were checked by rendering
+  before/after frames.
 - **Packaging:** `dotnet pack` produces `Uno.Effects.Particles.0.1.0.nupkg` with
-  `lib/net10.0-desktop` and `lib/net10.0-browserwasm`.
+  `lib/net10.0-desktop` and `lib/net10.0-browserwasm`. Still no licence.
 
 ## Next actions (in order)
 
-1. **Run `--render-tests` on the WebAssembly head and diff the hashes against
-   desktop.** Highest-information item left. Every hash so far came from Skia
-   Desktop, so the recommendation's central claim — the same pixels on every
-   target — is asserted, not demonstrated. It may well fail (float determinism
-   in the browser, `MathF.Sin`), which is exactly why it should run before more
-   is built on the assumption.
-2. **Benchmark head + `matrix.json` + the platform strip on each detail page**
+1. **LICENSE file.** The repo is now public; without a licence nobody may use
+   the code or the package.
+2. **Run `--render-tests` on the WebAssembly head and diff the hashes against
+   desktop.** Every hash so far came from Skia Desktop, so "the same pixels on
+   every target" is asserted, not demonstrated. Then add it to CI.
+3. **Benchmark head + `matrix.json` + the platform strip on each detail page**
    (recommendation §1 and §5). The measurement plumbing already exists in
-   `RenderTestRunner`.
-3. **Amend §5's CI budget in the document.** 8 ms p95 on desktop does not hold
+   `RenderTestRunner`; CI can publish the matrix once it exists.
+4. **Amend §5's CI budget in the document.** 8 ms p95 on desktop does not hold
    for Metaballs on the CPU raster backend (measured 5–18 ms at 256×256).
-   State budgets per backend, or give shader effects a coarser evaluation path
-   first — writing the gate as-is makes CI red on day one.
-4. **Add the remaining heads** (WinAppSDK, Android, iOS, Skia Desktop on
-   macOS/Linux). Currently only `browserwasm` and `desktop` are built. This also
-   settles the document's open decision about the Windows head with evidence.
-5. **`.github/workflows`** — there is no CI. Build both heads, run
-   `--render-tests`, fail on non-determinism or a blank effect, publish
-   `matrix.json`.
-6. **LICENSE file.** The document lists licence as an open decision and there is
-   none; a NuGet package without one is not consumable.
-7. **Copy-as-source (Tier 2)** — the zero-dependency tier in §2, entirely
-   unbuilt.
+5. **Add the remaining heads** (WinAppSDK, Android, iOS, Skia Desktop on
+   macOS). This also settles the open decision about the Windows head.
+6. **Copy-as-source (Tier 2)** — the zero-dependency tier in §2, unbuilt.
+7. **Review findings not yet fixed** (all verified, none affects default
+   settings on a square tile):
+   - Grid effects (Wave, Halftone, Shimmer, PulseGrid, Static, Lattice,
+     Filings, Repel) treat `Count` as columns, so Count 400 means 160k cells.
+     Clamp the columns or give them their own range.
+   - Metaballs silently caps `Count` at 8; the slider goes to 400.
+   - Lightning bolts stop at ~860 px on tall views (`MaxSegments = 96`).
+   - Size does not scale some outlines: Bokeh rim, Sparkle cross, Bubbles,
+     Pollen. Recycle margins in Fog, Bubbles, Rain, Confetti and Leaves ignore
+     Size, so large particles pop at the edge.
+   - Gravity runs backwards in Dust and Embers (it speeds the rise).
+   - Nebula draws one cloud in four in the primary ink (`(i % 4) + 1` wraps).
+   - Frame 0 is wrong for Trail (head at 0,0) and Grain (solid black). Only
+     visible with `WarmUpFrames="0"`; fixing it moves those two hashes.
+   - Arcs, Grain and Static re-randomise every frame whatever `Speed` is; Ink's
+     random walk scales by dt where it should scale by its square root.
+   - `ReducedMotion` is read once per process, so changing the OS setting needs
+     a restart.
 
 Lower down: compare view, URL state, `Mask`, the `?effect=…&embed=1` docs route,
 and the Phase 3 tooling work (Hot Design `.Design` assembly, Playground deep

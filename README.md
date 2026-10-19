@@ -110,9 +110,16 @@ Measured on Skia Desktop (Windows, CPU raster), 256x256, all 64 effects:
 
 | | median frame time | allocation per frame |
 |---|---|---|
-| 62 particle and CPU effects | 0.03 – 1.3 ms | 16 – 295 B |
-| Plasma (SKSL) | ~3 – 5 ms | ~10 KB |
-| Metaballs (SKSL) | ~5 – 18 ms | ~10 KB |
+| 62 particle and CPU effects | 0.03 – 1.3 ms | 10 – 230 B |
+| Plasma (SKSL) | ~3 – 5 ms | ~0.4 KB |
+| Metaballs (SKSL) | ~5 – 18 ms | ~0.4 KB |
+
+Allocation figures are from the October 2026 pass; frame times are from the
+original Windows measurement. The shader effects used to allocate ~10 KB a frame,
+almost all of it from re-reading their embedded `.sksl` resource on every draw.
+
+CI (`.github/workflows/ci.yml`) builds both heads with warnings as errors and
+runs the render tests on Skia Desktop under Xvfb on every pull request.
 
 The particle effects hold the recommendation's budget with room to spare and
 allocate essentially nothing per frame — the emitters keep fixed-capacity pools
@@ -121,7 +128,7 @@ keeps that number flat.
 
 **The shader effects do not**, and the reason is worth knowing before the CI
 budgets in Phase 2 are written: on the CPU raster backend every SKSL
-instruction is interpreted per pixel, and each frame allocates one `SKShader`.
+instruction is interpreted per pixel, and each frame still builds one `SKShader`.
 Metaballs in particular sits at or above the recommendation's 8 ms desktop
 budget at 256x256. Adding a `break` once the active blob count is passed cut it
 roughly threefold; the rest is the backend. A GPU-backed surface, or evaluating
@@ -149,9 +156,17 @@ diagnostics objects when it unloads. Filtering the board discards 64 views at a
 time, so waiting for finalization here is the difference between a steady
 process and one that holds far more native memory than it is using.
 
-**The surface colour is resolved on change, not per frame.** It is read twice a
-frame by every view on the board; a dependency-property lookup and a brush cast
-at that rate is not free.
+**Colours are resolved once a frame, not at every read.** The surface colour and
+each effect's palette are read from their brushes once per frame and cached for
+the draw. Once a frame rather than once per change, so a theme switch or a
+`ColorAnimation` that changes a brush in place is followed, without holding
+callbacks on app-lifetime brushes that would keep views alive.
+
+**Per-step constants follow the frame time.** Spawn counts and damping factors
+were tuned per 1/60 s step. `TunedSteps`, `PerTunedStep` and `SpawnThisFrame`
+rescale them to the real frame time, so an effect looks the same at 120 fps or at
+`Speed="0.25"` as at 60 fps. At exactly 1/60 s they reduce to the constants, so
+the fixed-timestep hashes did not move.
 
 Still open, and deliberately so: the board realizes all 64 tiles rather than
 virtualizing them, so every tile owns a surface whether or not it is scrolled
