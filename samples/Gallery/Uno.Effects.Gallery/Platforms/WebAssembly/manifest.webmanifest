@@ -1,0 +1,10 @@
+{
+  "background_color": "#ffffff",
+  "description": "Uno.Effects.Gallery",
+  "display": "standalone",
+  "name": "Uno.Effects.Gallery",
+  "short_name": "Uno.Effects.Gallery",
+  "start_url": "/index.html",
+  "theme_color": "#ffffff",
+  "scope": "/"
+}

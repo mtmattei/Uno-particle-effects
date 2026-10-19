@@ -1,0 +1,34 @@
+<Project Sdk="Uno.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net10.0-browserwasm;net10.0-desktop</TargetFrameworks>
+    <UnoSingleProject>true</UnoSingleProject>
+    <OutputType>Library</OutputType>
+    <GenerateLibraryLayout>true</GenerateLibraryLayout>
+    <RootNamespace>Uno.Effects.Particles</RootNamespace>
+
+    <!-- NuGet identity (see the recommendation: ship as its own 0.x package). -->
+    <PackageId>Uno.Effects.Particles</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Uno Platform</Authors>
+    <Description>Particle and shader effects for Uno Platform, drawn with SkiaSharp through a single ParticleView control.</Description>
+    <PackageTags>uno-platform;skiasharp;particles;shaders;sksl;animation</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!-- Uno.Sdk marks single projects non-packable by default; this library is
+         the shipping artefact, so it opts back in. -->
+    <IsPackable>true</IsPackable>
+
+    <UnoFeatures>
+      SkiaRenderer;
+    </UnoFeatures>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Shader effects carry their SKSL as embedded resources, so the source
+         the gallery shows and the source that runs are the same string. -->
+    <EmbeddedResource Include="Shaders\*.sksl" />
+  </ItemGroup>
+</Project>

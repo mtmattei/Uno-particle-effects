@@ -59,6 +59,6 @@ The gallery writes out only the knobs you changed, so the snippet you copy stays
 
 ## Before posting
 
-- Add the link (repo, NuGet or gallery). `mtmattei/uno.particles` is private and the package
-  is not on nuget.org yet, so "copy & paste" currently needs one of those to be public.
+- Add the link (repo, NuGet or gallery). The package is not on nuget.org yet, so "copy & paste"
+  currently means cloning this repo.
 - No licence file exists yet; add one before inviting people to copy code.

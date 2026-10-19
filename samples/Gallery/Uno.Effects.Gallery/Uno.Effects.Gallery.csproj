@@ -1,0 +1,41 @@
+<Project Sdk="Uno.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Uno.Effects.Particles\Uno.Effects.Particles.csproj" />
+    <ProjectReference Include="..\..\..\tests\Uno.Effects.RuntimeTests\Uno.Effects.RuntimeTests.csproj" />
+  </ItemGroup>
+  <PropertyGroup>
+    <TargetFrameworks>net10.0-browserwasm;net10.0-desktop</TargetFrameworks>
+
+    <OutputType>Exe</OutputType>
+    <UnoSingleProject>true</UnoSingleProject>
+
+    <!-- Display name -->
+    <ApplicationTitle>Uno.Effects.Gallery</ApplicationTitle>
+    <!-- App Identifier -->
+    <ApplicationId>com.companyname.uno-effects-gallery</ApplicationId>
+    <!-- Versions -->
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+    <!-- Package Publisher -->
+    <ApplicationPublisher>Uno.Effects.Gallery</ApplicationPublisher>
+    <!-- Package Description -->
+    <Description>Uno.Effects.Gallery powered by Uno Platform.</Description>
+
+    <!--
+      UnoFeatures are used to quickly add and manage features enabled for your app.
+      https://aka.platform.uno/singleproject-features
+    -->
+    <UnoFeatures>
+      SkiaRenderer;
+    </UnoFeatures>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The catalog travels inside the assembly so the same load path works on
+         every head, WebAssembly included. -->
+    <Content Remove="Catalog\Catalog.json" />
+    <None Remove="Catalog\Catalog.json" />
+    <EmbeddedResource Include="Catalog\Catalog.json" />
+  </ItemGroup>
+
+</Project>

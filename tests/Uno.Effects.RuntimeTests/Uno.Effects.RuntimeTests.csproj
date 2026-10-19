@@ -1,0 +1,17 @@
+<Project Sdk="Uno.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net10.0-browserwasm;net10.0-desktop</TargetFrameworks>
+    <UnoSingleProject>true</UnoSingleProject>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Uno.Effects.RuntimeTests</RootNamespace>
+    <IsPackable>false</IsPackable>
+
+    <UnoFeatures>
+      SkiaRenderer;
+    </UnoFeatures>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Uno.Effects.Particles\Uno.Effects.Particles.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,6 +1,6 @@
 # Uno.Effects media
 
-Captured from `mtmattei/uno.particles` @ `681211d`, gallery Release build, Skia Desktop on Linux (Xvfb).
+Captured from the library at `681211d`, gallery Release build, Skia Desktop on Linux (Xvfb).
 
 | Folder | What |
 |---|---|
@@ -25,28 +25,27 @@ bloom on bright pixels only, a vignette, film grain and the caption.
 
 ## Regenerate
 
-Needs a checkout of `mtmattei/uno.particles` at `681211d` (private for now), the .NET 10 SDK,
-and Python 3 with Pillow and NumPy. Fonts: Inter and DejaVu Sans Mono. If they are not in a
-standard font folder, set `UNO_FX_FONTS` to the folder that has them.
+Needs the .NET 10 SDK and Python 3 with Pillow and NumPy. Fonts: Inter and DejaVu Sans Mono.
+If they are not in a standard font folder, set `UNO_FX_FONTS` to the folder that has them.
 
-From the library root, with `SRC` set to this repo's `media/_source` folder:
+From the repo root:
 
 ```
-git apply $SRC/App.xaml.cs.capture.patch
-cp $SRC/ArtRenderer.cs samples/Gallery/Uno.Effects.Gallery/
+git apply media/_source/App.xaml.cs.capture.patch
+cp media/_source/ArtRenderer.cs samples/Gallery/Uno.Effects.Gallery/
 dotnet build samples/Gallery/Uno.Effects.Gallery -f net10.0-desktop -c Release
 ```
 
 The patch adds `--art <spec.json> <outDir>` and `--window WxH` to the gallery. It is for capture
-only and is not meant for the library.
+only: revert it and delete the copied `ArtRenderer.cs` before committing.
 
 Then, with `G` set to `samples/Gallery/Uno.Effects.Gallery/bin/Release/net10.0-desktop/Uno.Effects.Gallery`
 (`.exe` on Windows, called as `& $G` in PowerShell; prefix `xvfb-run -a` on a Linux box with no display):
 
 ```
-$G --art $SRC/shots.json raw/
-python $SRC/finish.py raw/ out/
-python $SRC/poster.py out/clean out/00-library-poster.jpg
+$G --art media/_source/shots.json raw/
+python media/_source/finish.py raw/ out/
+python media/_source/poster.py out/clean out/00-library-poster.jpg
 ```
 
 `out/` then mirrors `art/`. The full-size renders take a few minutes; for a quick check, set

@@ -1,0 +1,10 @@
+<linker>
+  <assembly fullname="Uno.Effects.Gallery" />
+
+  <!--
+    The gallery reaches every effect by reflection: Catalog.json names the
+    types, and the property panel reads their properties and attributes. The
+    trimmer cannot see any of that, so the effects assembly is preserved whole.
+  -->
+  <assembly fullname="Uno.Effects.Particles" />
+</linker>

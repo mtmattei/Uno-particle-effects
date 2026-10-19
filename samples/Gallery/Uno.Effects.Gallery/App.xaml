@@ -1,0 +1,187 @@
+﻿<Application x:Class="Uno.Effects.Gallery.App"
+       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <!-- Load WinUI resources -->
+        <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+      </ResourceDictionary.MergedDictionaries>
+
+      <!--
+        The study sheet's palette. Paper and ink, one amber accent, and a dark
+        tile that every effect is drawn onto.
+      -->
+      <Color x:Key="PaperColor">#E8E5DF</Color>
+      <Color x:Key="InkColor">#2A2A28</Color>
+      <Color x:Key="MutedColor">#8A8680</Color>
+      <Color x:Key="BodyColor">#5E5B55</Color>
+      <Color x:Key="RuleColor">#D4D0C8</Color>
+      <Color x:Key="PanelColor">#F1EEE8</Color>
+      <Color x:Key="AccentColor">#D6A068</Color>
+
+      <SolidColorBrush x:Key="PaperBrush" Color="{StaticResource PaperColor}" />
+      <SolidColorBrush x:Key="InkBrush" Color="{StaticResource InkColor}" />
+      <SolidColorBrush x:Key="MutedBrush" Color="{StaticResource MutedColor}" />
+      <SolidColorBrush x:Key="BodyBrush" Color="{StaticResource BodyColor}" />
+      <SolidColorBrush x:Key="RuleBrush" Color="{StaticResource RuleColor}" />
+      <SolidColorBrush x:Key="PanelBrush" Color="{StaticResource PanelColor}" />
+      <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
+
+      <!-- The surface every effect is drawn onto, and its light counterpart. -->
+      <SolidColorBrush x:Key="TileSurfaceBrush" Color="{StaticResource InkColor}" />
+      <SolidColorBrush x:Key="LightSurfaceBrush" Color="#F4F2ED" />
+
+      <!--
+        A palette an effect can be handed wholesale. Because these are brushes,
+        an effect follows a theme change without any code.
+      -->
+      <FontFamily x:Key="SansFontFamily">Helvetica Neue, Helvetica, Segoe UI, Arial</FontFamily>
+      <FontFamily x:Key="MonoFontFamily">Cascadia Mono, Consolas, Menlo, Courier New</FontFamily>
+
+      <!-- Type ramp, matching the study sheet. -->
+      <Style x:Key="PageTitleStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource SansFontFamily}" />
+        <Setter Property="FontSize" Value="22" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
+      </Style>
+
+      <Style x:Key="EyebrowStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource SansFontFamily}" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="CharacterSpacing" Value="80" />
+        <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+      </Style>
+
+      <Style x:Key="CaptionStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource SansFontFamily}" />
+        <Setter Property="FontSize" Value="11.5" />
+        <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
+      </Style>
+
+      <Style x:Key="BodyStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource SansFontFamily}" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="Foreground" Value="{StaticResource BodyBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+      </Style>
+
+      <Style x:Key="CodeStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource MonoFontFamily}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
+        <Setter Property="IsTextSelectionEnabled" Value="True" />
+      </Style>
+
+      <!-- A flat, paper-coloured button; the only button shape in the app. -->
+      <Style x:Key="FlatButtonStyle" TargetType="Button">
+        <Setter Property="FontFamily" Value="{StaticResource SansFontFamily}" />
+        <Setter Property="FontSize" Value="11.5" />
+        <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{StaticResource RuleBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="Padding" Value="12,6" />
+        <Setter Property="UseSystemFocusVisuals" Value="True" />
+      </Style>
+
+      <!--
+        A board tile is a button with no chrome of its own: the effect and its
+        caption are the whole affordance. Being a real button rather than a
+        tapped panel is what makes the board reachable from the keyboard.
+      -->
+      <Style x:Key="TileButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="UseSystemFocusVisuals" Value="True" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="Button">
+              <!-- The Border is what makes the whole tile pressable; a bare
+                   ContentPresenter leaves the button with nothing to hit. -->
+              <Border Background="{TemplateBinding Background}">
+                <ContentPresenter Content="{TemplateBinding Content}"
+                                  HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Top" />
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+
+      <!-- A chip is a rule-bordered pill that fills with ink when selected. -->
+    <Style x:Key="ChipStyle" TargetType="ToggleButton">
+      <Setter Property="FontFamily" Value="{StaticResource SansFontFamily}" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="Padding" Value="11,5" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="CornerRadius" Value="11" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ToggleButton">
+            <Border x:Name="Root"
+                    Background="Transparent"
+                    BorderBrush="{StaticResource RuleBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter x:Name="Label"
+                                Content="{TemplateBinding Content}"
+                                Foreground="{StaticResource BodyBrush}"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center" />
+              <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup x:Name="CommonStates">
+                  <VisualState x:Name="Normal" />
+                  <VisualState x:Name="PointerOver">
+                    <VisualState.Setters>
+                      <Setter Target="Root.BorderBrush" Value="{StaticResource MutedBrush}" />
+                    </VisualState.Setters>
+                  </VisualState>
+                  <VisualState x:Name="Pressed">
+                    <VisualState.Setters>
+                      <Setter Target="Root.BorderBrush" Value="{StaticResource InkBrush}" />
+                    </VisualState.Setters>
+                  </VisualState>
+                  <VisualState x:Name="Checked">
+                    <VisualState.Setters>
+                      <Setter Target="Root.Background" Value="{StaticResource InkBrush}" />
+                      <Setter Target="Root.BorderBrush" Value="{StaticResource InkBrush}" />
+                      <Setter Target="Label.Foreground" Value="{StaticResource PaperBrush}" />
+                    </VisualState.Setters>
+                  </VisualState>
+                  <VisualState x:Name="CheckedPointerOver">
+                    <VisualState.Setters>
+                      <Setter Target="Root.Background" Value="{StaticResource InkBrush}" />
+                      <Setter Target="Root.BorderBrush" Value="{StaticResource InkBrush}" />
+                      <Setter Target="Label.Foreground" Value="{StaticResource PaperBrush}" />
+                    </VisualState.Setters>
+                  </VisualState>
+                  <VisualState x:Name="CheckedPressed">
+                    <VisualState.Setters>
+                      <Setter Target="Root.Background" Value="{StaticResource InkBrush}" />
+                      <Setter Target="Root.BorderBrush" Value="{StaticResource InkBrush}" />
+                      <Setter Target="Label.Foreground" Value="{StaticResource PaperBrush}" />
+                    </VisualState.Setters>
+                  </VisualState>
+                </VisualStateGroup>
+              </VisualStateManager.VisualStateGroups>
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    </ResourceDictionary>
+  </Application.Resources>
+
+</Application>
