@@ -1,0 +1,4 @@
+[
+ {"name":"bokeh-nebula","w":640,"h":360,"scale":4,"frames":300,"surface":"#121211","layers":[{"id":"nebula","palette":["#D6A068","#96A38C","#BE7860","#E9E5DD"]},{"id":"bokeh","palette":["#D6A068","#E9E5DD"]}]},
+ {"name":"sphere","w":320,"h":320,"scale":6,"frames":300,"surface":"#141413","layers":[{"id":"sphere","palette":["#E9E5DD","#D6A068"]}]}
+]

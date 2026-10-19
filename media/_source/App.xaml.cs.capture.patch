@@ -1,5 +1,5 @@
---- /home/user/uno.particles/samples/Gallery/Uno.Effects.Gallery/App.xaml.cs	2026-10-16 18:04:23.901485391 +0000
-+++ samples/Gallery/Uno.Effects.Gallery/App.xaml.cs	2026-10-16 18:08:15.242107613 +0000
+--- a/samples/Gallery/Uno.Effects.Gallery/App.xaml.cs
++++ b/samples/Gallery/Uno.Effects.Gallery/App.xaml.cs
 @@ -29,7 +29,22 @@
              return;
          }
