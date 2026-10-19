@@ -64,6 +64,7 @@ public sealed partial class Follow : ParticleEffect
 	protected override void Step(in EffectFrame frame)
 	{
 		var attraction = (float)Attraction;
+		var damping = PerTunedStep(0.94f, in frame);
 
 		for (var i = 0; i < _chasers.Length; i++)
 		{
@@ -71,8 +72,8 @@ public sealed partial class Follow : ParticleEffect
 
 			chaser.VelocityX += (frame.PointerX - chaser.X) * chaser.Stiffness * attraction * frame.DeltaTime;
 			chaser.VelocityY += (frame.PointerY - chaser.Y) * chaser.Stiffness * attraction * frame.DeltaTime;
-			chaser.VelocityX *= 0.94f;
-			chaser.VelocityY *= 0.94f;
+			chaser.VelocityX *= damping;
+			chaser.VelocityY *= damping;
 			chaser.X += chaser.VelocityX * frame.DeltaTime * 8f;
 			chaser.Y += chaser.VelocityY * frame.DeltaTime * 8f;
 		}

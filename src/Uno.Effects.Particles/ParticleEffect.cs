@@ -347,6 +347,7 @@ public abstract partial class ParticleEffect : DependencyObject, IDisposable
 		if (reemit || !_emitted)
 		{
 			Random = new EffectRandom(Seed);
+			ResetSpawnCarry();
 			Emit(in frame);
 			_emitted = true;
 		}

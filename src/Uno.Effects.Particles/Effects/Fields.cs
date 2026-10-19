@@ -62,7 +62,7 @@ public sealed partial class FlowField : ParticleEffect
 			// a handful of attracting paths.
 			if (tracer.X < 0 || tracer.X > frame.Width
 				|| tracer.Y < 0 || tracer.Y > frame.Height
-				|| Random.NextSingle() < 0.004f)
+				|| Random.NextSingle() < 0.004f * TunedSteps(in frame))
 			{
 				tracer.X = Random.Next(frame.Width);
 				tracer.Y = Random.Next(frame.Height);
@@ -151,7 +151,7 @@ public sealed partial class CurlNoise : ParticleEffect
 
 			if (tracer.X < 0 || tracer.X > frame.Width
 				|| tracer.Y < 0 || tracer.Y > frame.Height
-				|| Random.NextSingle() < 0.004f)
+				|| Random.NextSingle() < 0.004f * TunedSteps(in frame))
 			{
 				tracer.X = Random.Next(frame.Width);
 				tracer.Y = Random.Next(frame.Height);

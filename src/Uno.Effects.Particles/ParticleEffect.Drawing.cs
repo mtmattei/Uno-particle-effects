@@ -13,6 +13,7 @@ public abstract partial class ParticleEffect
 
 	private SKPaint? _paint;
 	private SKPath? _path;
+	private float _spawnCarry;
 
 	/// <summary>
 	/// A single antialiased paint reused for the whole effect. Effects mutate
@@ -31,6 +32,8 @@ public abstract partial class ParticleEffect
 		_path.Rewind();
 		return _path;
 	}
+
+	private protected void ResetSpawnCarry() => _spawnCarry = 0f;
 
 	private protected void DisposeDrawingObjects()
 	{
@@ -132,6 +135,34 @@ public abstract partial class ParticleEffect
 	/// root so a busier device gets a finer grid rather than a stretched one,
 	/// and <see cref="Count"/> overrides the designed value.
 	/// </summary>
+	/// <summary>
+	/// The frame rate the effects were tuned at. Per-step constants (a damping
+	/// factor, a spawn count) mean "per 1/60 s", and the helpers below rescale
+	/// them to the actual frame time, so an effect looks the same at 30, 60 or
+	/// 120 fps and at any <see cref="Speed"/>. At exactly 1/60 s they return
+	/// the constant unchanged, so the fixed-timestep render tests are unaffected.
+	/// </summary>
+	protected const float TunedStepsPerSecond = 60f;
+
+	/// <summary>How many tuned steps this frame's time amounts to.</summary>
+	protected static float TunedSteps(in EffectFrame frame) => frame.DeltaTime * TunedStepsPerSecond;
+
+	/// <summary>A per-step multiplier (such as velocity damping) applied over this frame.</summary>
+	protected static float PerTunedStep(float factor, in EffectFrame frame) => MathF.Pow(factor, TunedSteps(in frame));
+
+	/// <summary>
+	/// Whole items to emit this frame for a rate given per tuned step. The
+	/// fraction carries over, so a slow frame rate or a low speed still emits
+	/// the same number per second.
+	/// </summary>
+	protected int SpawnThisFrame(float perStep, in EffectFrame frame)
+	{
+		_spawnCarry += perStep * TunedSteps(in frame);
+		var spawn = (int)_spawnCarry;
+		_spawnCarry -= spawn;
+		return spawn;
+	}
+
 	protected int ResolveGridColumns(in EffectFrame frame) =>
 		Math.Max(2, (int)MathF.Round((Count > 0 ? Count : NaturalCount) * MathF.Sqrt(frame.Density)));
 

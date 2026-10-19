@@ -120,7 +120,8 @@ public sealed partial class Trail : ParticleEffect
 		_headX = (frame.Width / 2f) + (MathF.Sin(frame.Time * 1.3f) * frame.Width * 0.36f);
 		_headY = (frame.Height / 2f) + (MathF.Sin((frame.Time * 2.1f) + 1f) * frame.Height * 0.36f);
 
-		for (var i = 0; i < 2 && _live < Capacity; i++)
+		var spawn = SpawnThisFrame(2f, in frame);
+		for (var i = 0; i < spawn && _live < Capacity; i++)
 		{
 			_motes[_live++] = new Mote
 			{

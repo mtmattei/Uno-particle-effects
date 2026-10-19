@@ -126,7 +126,7 @@ public sealed partial class Sparks : ParticleEffect
 	protected override void Step(in EffectFrame frame)
 	{
 		var gravity = (float)Gravity;
-		var spawn = ResolveCount(in frame);
+		var spawn = SpawnThisFrame(ResolveCount(in frame), in frame);
 
 		for (var i = 0; i < spawn && _live < Capacity; i++)
 		{
@@ -581,13 +581,15 @@ public sealed partial class Fireworks : ParticleEffect
 			}
 		}
 
+		var damping = PerTunedStep(0.985f, in frame);
+
 		for (var i = _live - 1; i >= 0; i--)
 		{
 			ref var mote = ref _motes[i];
 
 			mote.VelocityY += 40f * gravity * frame.DeltaTime;
-			mote.VelocityX *= 0.985f;
-			mote.VelocityY *= 0.985f;
+			mote.VelocityX *= damping;
+			mote.VelocityY *= damping;
 			mote.X += mote.VelocityX * frame.DeltaTime;
 			mote.Y += mote.VelocityY * frame.DeltaTime;
 			mote.Life -= frame.DeltaTime * 0.7f;
@@ -640,7 +642,7 @@ public sealed partial class Fountain : ParticleEffect
 	protected override void Step(in EffectFrame frame)
 	{
 		var gravity = (float)Gravity;
-		var spawn = ResolveCount(in frame);
+		var spawn = SpawnThisFrame(ResolveCount(in frame), in frame);
 
 		for (var i = 0; i < spawn && _live < Capacity; i++)
 		{
@@ -741,12 +743,14 @@ public sealed partial class Burst : ParticleEffect
 			}
 		}
 
+		var damping = PerTunedStep(0.97f, in frame);
+
 		for (var i = 0; i < _shards.Length; i++)
 		{
 			ref var shard = ref _shards[i];
 
-			shard.VelocityX *= 0.97f;
-			shard.VelocityY *= 0.97f;
+			shard.VelocityX *= damping;
+			shard.VelocityY *= damping;
 			shard.X += shard.VelocityX * frame.DeltaTime;
 			shard.Y += shard.VelocityY * frame.DeltaTime;
 			shard.Life -= frame.DeltaTime * 0.5f;
@@ -798,7 +802,7 @@ public sealed partial class Sparkle : ParticleEffect
 		// Count scales the spawn rate: whole stars per step, plus a chance at
 		// one more for the fraction. At the default this is the original 0.3
 		// chance per step, drawing the same random numbers.
-		var rate = 0.3f * frame.Density * (Count > 0 ? Count : NaturalCount);
+		var rate = 0.3f * frame.Density * (Count > 0 ? Count : NaturalCount) * TunedSteps(in frame);
 		var spawn = (int)rate;
 		if (Random.NextSingle() < rate - spawn)
 		{
@@ -1063,7 +1067,7 @@ public sealed partial class Sparkler : ParticleEffect
 		var gravity = (float)Gravity;
 		var centerX = frame.Width / 2f;
 		var centerY = frame.Height / 2f;
-		var spawn = ResolveCount(in frame);
+		var spawn = SpawnThisFrame(ResolveCount(in frame), in frame);
 
 		for (var i = 0; i < spawn && _live < Capacity; i++)
 		{
